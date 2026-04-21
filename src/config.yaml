@@ -1,0 +1,16 @@
+environment: dev
+
+synthetic_data:
+    experiments:
+        rows: 10
+        created_start: 2024-01-01
+        created_end: 2024-01-07
+        signed_probability: 0.85
+        signed_max_delay_days: 14
+        witnessed_probability: 0.75
+        witnessed_max_delay_days: 7
+        local: False
+        file_name: experiments.json
+        s3_bucket: oncology-experimental-lakehouse
+
+
