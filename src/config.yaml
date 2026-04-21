@@ -10,7 +10,6 @@ synthetic_data:
         witnessed_probability: 0.75
         witnessed_max_delay_days: 7
         local: False
-        file_name: experiments.json
         s3_bucket: oncology-experimental-lakehouse
 
 

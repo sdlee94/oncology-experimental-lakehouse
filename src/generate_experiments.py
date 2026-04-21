@@ -1,4 +1,5 @@
 import json
+from numpy import rint
 import yaml
 import random
 import uuid
@@ -11,7 +12,9 @@ import helpers
 
 fake = Faker()
 
-
+# -----------------------------
+# Field generators
+# -----------------------------
 def random_status(signed_at, witnessed_at) -> str:
     if witnessed_at:
         return "Witnessed"
@@ -108,7 +111,9 @@ def generate_record(
 
     return record
 
-
+# -----------------------------
+# Main function
+# -----------------------------
 def main():
     with open("config.yaml", "r", encoding="utf-8") as file:
         config = yaml.safe_load(file)
@@ -130,19 +135,19 @@ def main():
     ]
 
     content = json.dumps(rows, indent=2, ensure_ascii=False)
-    output = config["file_name"]
+    
+    current_date = datetime.now().strftime("%Y-%m-%d")
+    current_time = datetime.now().strftime("%H-%M-%S")
 
     if config["local"]:
-        Path(output).parent.mkdir(parents=True, exist_ok=True)
-        with open(output, "w", encoding="utf-8") as f:
+        Path("experiments.json").parent.mkdir(parents=True, exist_ok=True)
+        with open("experiments.json", "w", encoding="utf-8") as f:
             f.write(content)
     else:
         s3_bucket = config["s3_bucket"]
-        s3_key = f"ingest/{config['file_name']}"
+        s3_key = f"ingest/experiments/run_date={current_date}/{current_time}.json"
         helpers.write_to_s3(content, s3_bucket=s3_bucket, s3_key=s3_key)
-
-    print(f"Wrote {len(rows)} records to {output}")
-    return
+        print(f"Wrote {len(rows)} records to {s3_bucket}/{s3_key}")
 
 
 if __name__ == "__main__":
