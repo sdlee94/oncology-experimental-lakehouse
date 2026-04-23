@@ -1,6 +1,22 @@
+import boto3
+import botocore
+import json
 import random
+import yaml
 from datetime import datetime, timedelta
 from typing import Optional
+
+
+def load_config(config_path: str = "config.yaml") -> dict:
+    with open(config_path, "r", encoding="utf-8") as f:
+        config = yaml.safe_load(f)
+
+    return config
+
+
+def load_json_records(path: str) -> list[dict]:
+    with open(path, "r", encoding="utf-8") as f:
+        return json.load(f)
 
 
 def iso_or_none(value: Optional[datetime]) -> Optional[str]:
@@ -32,13 +48,20 @@ def maybe_datetime_after(
     return base_dt + timedelta(seconds=seconds)
 
 
+def read_s3(
+    s3_bucket: str,
+    s3_key: str
+) -> "botocore.response.StreamingBody":
+    s3 = boto3.client("s3")
+    obj = s3.get_object(Bucket=s3_bucket, Key=s3_key)
+    return obj["Body"]
+
+
 def write_to_s3(
     content: str,
     s3_bucket: str | None = None,
     s3_key: str | None = None
 ) -> None:
-    import boto3
-
     s3 = boto3.client("s3")
     s3.put_object(
         Bucket=s3_bucket, 

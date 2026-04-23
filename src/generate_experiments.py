@@ -115,9 +115,8 @@ def generate_record(
 # Main function
 # -----------------------------
 def main():
-    with open("config.yaml", "r", encoding="utf-8") as file:
-        config = yaml.safe_load(file)
-        config = config["synthetic_data"]["experiments"]
+    config = helpers.load_config()
+    config = config["synthetic_data"]["experiments"]
     
     created_start = datetime.combine(config["created_start"], datetime.min.time())
     created_end = datetime.combine(config["created_end"], datetime.max.time().replace(hour=23, minute=59, second=59))

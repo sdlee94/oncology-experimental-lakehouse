@@ -13,3 +13,9 @@ synthetic_data:
         s3_bucket: oncology-experimental-lakehouse
 
 
+raw:
+    experiments:
+        local: False
+        s3_bucket: oncology-experimental-lakehouse
+        test_source: ingest/experiments/run_date=2026-04-21/02-17-58.json
+        run_date: 2024-04-21
