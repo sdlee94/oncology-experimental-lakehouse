@@ -1,0 +1,37 @@
+sources:
+  - name: onc_exp_lh
+    description: "Source models for the Oncology Experimental Lakehouse."
+    schema: lakehouse-raw
+    tables:
+      - name: experiments
+        columns:
+          - name: experiment_id
+            description: "Unique identifier for each experiment."
+          - name: project
+            description: "Project associated with the experiment."
+          - name: experiment_name
+            description: "Name of the experiment."
+          - name: status
+            description: "Current status of the experiment."
+          - name: run_date
+            description: "Date when the experiment was run."
+          - name: author
+            description: "Author of the experiment."
+          - name: witnessed_by
+            description: "Person who witnessed the experiment."
+          - name: protocol_name
+            description: "Name of the protocol used in the experiment."
+          - name: protocol_code
+            description: "Code of the protocol used in the experiment."
+          - name: protocol_version
+            description: "Version of the protocol used in the experiment."
+          - name: created_at
+            description: "Timestamp when the experiment record was created."
+          - name: signed_at
+            description: "Timestamp when the experiment was signed off."
+          - name: witnessed_at
+            description: "Timestamp when the experiment was witnessed."
+          - name: ingested_at
+            description: "Timestamp when the experiment record was ingested into the lakehouse."
+          - name: ingest_date
+            description: "Date when the experiment record was ingested into the lakehouse."
