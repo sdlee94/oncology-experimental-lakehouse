@@ -36,16 +36,17 @@ def convert_to_dataframe_from_records(records: list[dict]) -> pd.DataFrame:
     rows = [flatten_record(record) for record in records]
     df = pd.DataFrame(rows)
 
-    datetime_cols = [
-        "run_date",
-        "created_at",
-        "signed_at",
-        "witnessed_at",
-    ]
+    # datetime_cols = [
+    #     "run_date",
+    #     "created_at",
+    #     "signed_at",
+    #     "witnessed_at",
+    # ]
 
-    for col in datetime_cols:
-        if col in df.columns:
-            df[col] = pd.to_datetime(df[col], errors="coerce")
+    # for col in datetime_cols:
+    #     if col in df.columns:
+    #         print(type(col))
+            # df[col] = pd.to_datetime(df[col], errors="coerce")
 
     return df
 
@@ -130,9 +131,9 @@ def main() -> None:
         records = helpers.load_json_records(source_file_path)
 
         df = convert_to_dataframe_from_records(records)
-        df = enrich_with_raw_metadata(df, records, source_file_path)
-        write_parquet(df, "experiments.parquet")
-        print("Parquet file written locally: experiments.parquet")
+        # df = enrich_with_raw_metadata(df, records, source_file_path)
+        # write_parquet(df, "experiments.parquet")
+        # print("Parquet file written locally: experiments.parquet")
 
     else:
         s3 = boto3.client('s3')
@@ -142,7 +143,7 @@ def main() -> None:
         records = json.loads(obj.read().decode('utf-8'))
 
         df = convert_to_dataframe_from_records(records)
-        df = enrich_with_raw_metadata(df, records, config["test_source"])
+        # df = enrich_with_raw_metadata(df, records, config["test_source"])
 
         # Write to S3
         current_date = datetime.now().strftime("%Y-%m-%d")
