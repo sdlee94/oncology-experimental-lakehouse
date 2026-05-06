@@ -4,7 +4,7 @@ synthetic_data:
     experiments:
         rows: 10
         created_start: 2024-01-01
-        created_end: 2024-01-07
+        created_end: 2024-01-14
         signed_probability: 0.85
         signed_max_delay_days: 14
         witnessed_probability: 0.75
@@ -17,5 +17,5 @@ raw:
     experiments:
         local: False
         s3_bucket: oncology-experimental-lakehouse
-        test_source: ingest/experiments/run_date=2026-04-23/23-09-24.json
-        run_date: 2024-04-21
+        test_source: ingest/experiments/run_date=2026-04-25/17-59-46.json
+        run_date: 2024-04-25

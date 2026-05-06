@@ -61,7 +61,7 @@ def generate_record(
 
     project = random.choice(["ONC001", "ONC002", "ONC003"])
     created_at = helpers.random_datetime_between(created_start, created_end)
-    experiment_name = f"{str(created_at)} {project} Experiment"
+    experiment_name = f"{str(created_at.date)} {project} Experiment"
     author_name = fake.name()
 
     run_date_delay = timedelta(days=random.randint(0, signed_max_delay_days))
