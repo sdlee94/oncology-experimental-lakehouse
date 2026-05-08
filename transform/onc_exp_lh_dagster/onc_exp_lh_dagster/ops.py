@@ -11,11 +11,12 @@ import sys
 from datetime import datetime
 import json
 import boto3
+from botocore.exceptions import ClientError
 
 
 @op(
     description="Run the ingest script to load experiments from S3 ingest to raw layer",
-    config_schema={"source_s3_path": str},
+    config_schema={"source_s3_paths": list},
     out=Out(
         dict,
         description="S3 path and metadata of ingested parquet file"
@@ -24,15 +25,19 @@ import boto3
 def run_ingest_experiments(context) -> dict:
     """Execute the Python ingest script"""
     try:
-        source_s3_path = context.op_config["source_s3_path"]
+        source_s3_paths = context.op_config["source_s3_paths"]
+        if not isinstance(source_s3_paths, list):
+            source_s3_paths = [source_s3_paths]
 
-        # Run the ingest script
+        args = [
+            sys.executable,
+            "onc_exp_lh_dagster/src/ingest_to_raw_experiments.py",
+        ]
+        for source_s3_path in source_s3_paths:
+            args.extend(["--source_s3_path", source_s3_path])
+
         result = subprocess.run(
-            [
-                sys.executable,
-                "onc_exp_lh_dagster/src/ingest_to_raw_experiments.py",
-                "--source_s3_path", source_s3_path,
-            ],
+            args,
             cwd=os.getcwd(),
             capture_output=True,
             text=True,
@@ -41,20 +46,18 @@ def run_ingest_experiments(context) -> dict:
         
         context.log.info(f"Ingest completed: {result.stdout}")
         
-        # Parse the output to get the S3 path
-        # Format: "Parquet file written to S3: s3://{bucket}/{output_key}"
         output_lines = result.stdout.strip().split('\n')
-        s3_path = None
+        s3_paths = []
         for line in output_lines:
-            if "s3://" in line:
-                s3_path = line.split("s3://")[-1]
-                break
-        
-        if not s3_path:
-            raise ValueError("Could not extract S3 path from ingest output")
-        
+            if line.strip().startswith("Parquet file written to S3:"):
+                s3_path = line.split("s3://", 1)[-1].strip()
+                s3_paths.append(f"s3://{s3_path}")
+
+        if not s3_paths:
+            raise ValueError("Could not extract any S3 output paths from ingest output")
+
         return {
-            "s3_path": f"s3://{s3_path}",
+            "s3_paths": s3_paths,
             "timestamp": datetime.now().isoformat(),
             "status": "success",
         }
@@ -84,10 +87,23 @@ def trigger_glue_crawler(context, ingest_metadata: dict) -> dict:
         return {
             "crawler_name": crawler_name,
             "status": "triggered",
-            "ingest_path": ingest_metadata["s3_path"],
+            "ingest_path": ingest_metadata["s3_paths"],
             "triggered_at": datetime.now().isoformat(),
         }
         
+    except ClientError as e:
+        error_code = e.response["Error"]["Code"]
+        error_message = e.response["Error"].get("Message", "")
+        if error_code == "CrawlerRunningException" or "already started" in error_message.lower():
+            context.log.info(f"Crawler '{crawler_name}' is already running; skipping start.")
+            return {
+                "crawler_name": crawler_name,
+                "status": "already_running",
+                "ingest_path": ingest_metadata["s3_path"],
+                "triggered_at": datetime.now().isoformat(),
+            }
+        context.log.error(f"❌ Failed to trigger crawler: {error_code}: {error_message}")
+        raise
     except Exception as e:
         context.log.error(f"❌ Failed to trigger crawler: {str(e)}")
         raise

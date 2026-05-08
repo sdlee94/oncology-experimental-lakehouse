@@ -81,6 +81,8 @@ resource "aws_glue_crawler" "raw_experiments" {
   database_name = aws_glue_catalog_database.lakehouse_raw.name
   role          = aws_iam_role.glue_crawler_role.arn
 
+  table_prefix = "raw_"
+
   s3_target {
     path = "s3://${aws_s3_bucket.oncology_experimental_lakehouse.bucket}/raw/experiments/"
   }
@@ -94,7 +96,9 @@ resource "aws_glue_crawler" "raw_experiments" {
     Version = 1.0
     Grouping = {
       TableGroupingPolicy = "CombineCompatibleSchemas"
+      TableLevelConfiguration = 3
     }
+    CreatePartitionIndex = false
   })
 }
 

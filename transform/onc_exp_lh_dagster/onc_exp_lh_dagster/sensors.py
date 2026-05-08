@@ -7,6 +7,7 @@ from dagster import (
     asset_sensor,
 )
 import boto3
+import hashlib
 import json
 from datetime import datetime
 
@@ -50,35 +51,36 @@ def s3_parquet_sensor(context):
         
         context.log.info(f"Found {len(new_files)} new source files")
 
-        run_requests = []
-        for key in new_files:
-            source_s3_path = f"s3://{bucket_name}/{key}"
-            context.log.info(f"Triggering ingest for {source_s3_path}")
+        source_s3_paths = [f"s3://{bucket_name}/{key}" for key in sorted(new_files)]
+        for source_s3_path in source_s3_paths:
+            context.log.info(f"Scheduling ingest for {source_s3_path}")
 
-            run_requests.append(
-                RunRequest(
-                    run_key=source_s3_path,  # Ensure idempotency per file
-                    run_config={
-                        "ops": {
-                            "run_ingest_experiments": {
-                                "config": {
-                                    "source_s3_path": source_s3_path
-                                }
+        batch_key = hashlib.sha256("|".join(source_s3_paths).encode("utf-8")).hexdigest()
+        run_requests = [
+            RunRequest(
+                run_key=batch_key,
+                run_config={
+                    "ops": {
+                        "run_ingest_experiments": {
+                            "config": {
+                                "source_s3_paths": source_s3_paths
                             }
                         }
-                    },
-                    tags={
-                        "source_s3_path": source_s3_path,
-                        "dataset": "experiments",
-                    },
-                )
+                    }
+                },
+                tags={
+                    "source_batch": batch_key,
+                    "dataset": "experiments",
+                },
             )
+        ]
 
-        # Update cursor with all current files
+        # Update cursor with files that we have scheduled for ingest
+        processed_files.update(new_files)
         context.update_cursor(
             json.dumps(
                 {
-                    "processed_files": sorted(current_files),
+                    "processed_files": sorted(processed_files),
                 }
             )
         )

@@ -1,9 +1,9 @@
 sources:
   - name: onc_exp_lh
     description: "Source models for the Oncology Experimental Lakehouse."
-    schema: lakehouse-raw
+    schema: lakehouse_raw
     tables:
-      - name: experiments
+      - name: raw_experiments
         columns:
           - name: experiment_id
             description: "Unique identifier for each experiment."
@@ -31,7 +31,7 @@ sources:
             description: "Timestamp when the experiment was signed off."
           - name: witnessed_at
             description: "Timestamp when the experiment was witnessed."
-          - name: ingested_at
-            description: "Timestamp when the experiment record was ingested into the lakehouse."
+          - name: record_hash
+            description: "Hash value representing the content of the experiment record for deduplication."
           - name: ingest_date
             description: "Date when the experiment record was ingested into the lakehouse."

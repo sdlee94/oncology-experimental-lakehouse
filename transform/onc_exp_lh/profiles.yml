@@ -5,6 +5,6 @@ onc_exp_lh:
       type: athena
       s3_staging_dir: s3://oncology-experimental-lakehouse/athena-results/
       region_name: us-east-1
-      schema: lakehouse-raw
+      schema: lakehouse_raw
       database: awsdatacatalog
       work_group: primary

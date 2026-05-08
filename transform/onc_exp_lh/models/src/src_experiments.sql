@@ -1,5 +1,5 @@
 WITH raw_experiments AS (
-    SELECT * FROM {{ source('onc_exp_lh', 'experiments') }}
+    SELECT * FROM {{ source('onc_exp_lh', 'raw_experiments') }}
 )
 SELECT
     experiment_id,
@@ -15,7 +15,7 @@ SELECT
     CAST(signed_at AS TIMESTAMP) AS signed_at,
     witnessed_by,
     CAST(witnessed_at AS TIMESTAMP) AS witnessed_at,
-    {# record_hash, #}
+    record_hash,
     CAST(ingest_date AS DATE) AS ingest_date
 FROM
     raw_experiments
