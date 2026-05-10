@@ -1,21 +1,18 @@
 environment: dev
 
-synthetic_data:
-    experiments:
-        rows: 10
-        created_start: 2024-01-01
-        created_end: 2024-01-14
-        signed_probability: 0.85
-        signed_max_delay_days: 14
-        witnessed_probability: 0.75
-        witnessed_max_delay_days: 7
-        local: False
-        s3_bucket: oncology-experimental-lakehouse
+local: True
+s3_bucket: oncology-experimental-lakehouse
 
+created_start: 2024-01-01
+created_end: 2024-01-14
 
-raw:
-    experiments:
-        local: False
-        s3_bucket: oncology-experimental-lakehouse
-        test_source: ingest/experiments/run_date=2026-04-25/17-59-46.json
-        run_date: 2024-04-25
+experiments:
+    rows: 10
+    signed_probability: 0.85
+    signed_max_delay_days: 14
+    witnessed_probability: 0.75
+    witnessed_max_delay_days: 7
+
+inventory:
+    rows_samples: 5
+    rows_stocks: 10
