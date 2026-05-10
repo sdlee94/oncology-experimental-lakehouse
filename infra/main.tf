@@ -102,3 +102,29 @@ resource "aws_glue_crawler" "raw_experiments" {
   })
 }
 
+# Glue crawler for raw invnentory
+resource "aws_glue_crawler" "raw_inventory" {
+  name          = "raw_inventory"
+  database_name = aws_glue_catalog_database.lakehouse_raw.name
+  role          = aws_iam_role.glue_crawler_role.arn
+
+  table_prefix = "raw_"
+
+  s3_target {
+    path = "s3://${aws_s3_bucket.oncology_experimental_lakehouse.bucket}/raw/inventory/"
+  }
+
+  schema_change_policy {
+    delete_behavior = "LOG"
+    update_behavior = "UPDATE_IN_DATABASE"
+  }
+
+  configuration = jsonencode({
+    Version = 1.0
+    Grouping = {
+      TableGroupingPolicy = "CombineCompatibleSchemas"
+      TableLevelConfiguration = 3
+    }
+    CreatePartitionIndex = false
+  })
+}

@@ -1,0 +1,7 @@
+s3_bucket: oncology-experimental-lakehouse
+athena_database: lakehouse_raw
+athena_output_location: s3://oncology-experimental-lakehouse/athena_query_results/
+
+athena_tables:
+    experiments: experiments
+    inventory: inventory

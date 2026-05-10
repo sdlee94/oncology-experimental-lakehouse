@@ -1,6 +1,6 @@
 environment: dev
 
-local: True
+local: FALSE
 s3_bucket: oncology-experimental-lakehouse
 
 created_start: 2024-01-01

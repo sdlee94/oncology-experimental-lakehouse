@@ -1,41 +1,27 @@
 from dagster import (
     op,
     Out,
-    DynamicOut,
-    DynamicOutput,
     graph
 )
 import os
 import subprocess
 import sys
 from datetime import datetime
-import json
 import boto3
 from botocore.exceptions import ClientError
 
 
-@op(
-    description="Run the ingest script to load experiments from S3 ingest to raw layer",
-    config_schema={"source_s3_paths": list},
-    out=Out(
-        dict,
-        description="S3 path and metadata of ingested parquet file"
-    )
-)
-def run_ingest_experiments(context) -> dict:
-    """Execute the Python ingest script"""
+INGEST_SCRIPT_PATH = "onc_exp_lh_dagster.ingest_to_raw.ingest_to_raw"
+
+def _run_ingest_to_raw(dataset: str, source_s3_paths: list[str]) -> dict:
+    if not isinstance(source_s3_paths, list):
+        source_s3_paths = [source_s3_paths]
+
+    args = [sys.executable, "-m", INGEST_SCRIPT_PATH, "--dataset", dataset]
+    for source_s3_path in source_s3_paths:
+        args.extend(["--source_s3_paths", source_s3_path])
+
     try:
-        source_s3_paths = context.op_config["source_s3_paths"]
-        if not isinstance(source_s3_paths, list):
-            source_s3_paths = [source_s3_paths]
-
-        args = [
-            sys.executable,
-            "onc_exp_lh_dagster/src/ingest_to_raw_experiments.py",
-        ]
-        for source_s3_path in source_s3_paths:
-            args.extend(["--source_s3_path", source_s3_path])
-
         result = subprocess.run(
             args,
             cwd=os.getcwd(),
@@ -43,30 +29,46 @@ def run_ingest_experiments(context) -> dict:
             text=True,
             check=True,
         )
-        
-        context.log.info(f"Ingest completed: {result.stdout}")
-        
-        output_lines = result.stdout.strip().split('\n')
-        s3_paths = []
-        for line in output_lines:
-            if line.strip().startswith("Parquet file written to S3:"):
-                s3_path = line.split("s3://", 1)[-1].strip()
-                s3_paths.append(f"s3://{s3_path}")
-
-        if not s3_paths:
-            raise ValueError("Could not extract any S3 output paths from ingest output")
-
-        return {
-            "s3_paths": s3_paths,
-            "timestamp": datetime.now().isoformat(),
-            "status": "success",
-        }
-        
     except subprocess.CalledProcessError as e:
-        context.log.error(f"Ingest script failed with exit code {e.returncode}")
-        context.log.error(f"STDOUT:\n{e.stdout}")
-        context.log.error(f"STDERR:\n{e.stderr}")
-        raise
+        print(f"Subprocess failed with return code {e.returncode}")
+        print(f"STDOUT: {e.stdout}")
+        print(f"STDERR: {e.stderr}")
+        raise e
+
+    output_lines = result.stdout.strip().split("\n")
+    s3_paths = []
+    for line in output_lines:
+        if line.strip().startswith("Parquet file written to S3:"):
+            s3_path = line.split("s3://", 1)[-1].strip()
+            s3_paths.append(f"s3://{s3_path}")
+
+    if not s3_paths:
+        raise ValueError("Could not extract any S3 output paths from ingest output")
+
+    return {
+        "dataset": dataset,
+        "s3_paths": s3_paths,
+        "timestamp": datetime.now().isoformat(),
+        "status": "success",
+    }
+
+
+@op(
+    description="Run the shared ingest script for any dataset source files",
+    config_schema={
+        "dataset": str,
+        "source_s3_paths": list,
+    },
+    out=Out(
+        dict,
+        description="S3 path and metadata of ingested file"
+    )
+)
+def run_ingest_to_raw(context) -> dict:
+    dataset = context.op_config["dataset"]
+    source_s3_paths = context.op_config["source_s3_paths"]
+    
+    return _run_ingest_to_raw(dataset, source_s3_paths)
 
 
 @op(
@@ -74,9 +76,10 @@ def run_ingest_experiments(context) -> dict:
 )
 def trigger_glue_crawler(context, ingest_metadata: dict) -> dict:
     """Trigger Glue crawler after data is ingested"""
+    dataset = ingest_metadata["dataset"]
     glue_client = boto3.client('glue')
     
-    crawler_name = "raw_experiments"
+    crawler_name = f"raw_{dataset}"
 
     try:
         context.log.info(f"Triggering Glue crawler: {crawler_name}")
@@ -99,7 +102,7 @@ def trigger_glue_crawler(context, ingest_metadata: dict) -> dict:
             return {
                 "crawler_name": crawler_name,
                 "status": "already_running",
-                "ingest_path": ingest_metadata["s3_path"],
+                "ingest_path": ingest_metadata["s3_paths"],
                 "triggered_at": datetime.now().isoformat(),
             }
         context.log.error(f"❌ Failed to trigger crawler: {error_code}: {error_message}")
@@ -147,9 +150,9 @@ def validate_athena_access(context, crawler_result: dict) -> dict:
 
 
 @graph
-def ingest_and_crawl_pipeline():
+def ingest_to_raw():
     """Complete pipeline: Ingest → Glue Crawl → Athena Validation"""
-    ingest_result = run_ingest_experiments()
+    ingest_result = run_ingest_to_raw()
     crawler_result = trigger_glue_crawler(ingest_result)
     athena_result = validate_athena_access(crawler_result)
     return athena_result
