@@ -15,7 +15,8 @@ s3_client = boto3.client("s3")
 
 DATASET_PREFIXES = {
     "experiments": "ingest/experiments/",
-    "inventory": "ingest/inventory/",
+    "samples": "ingest/samples/",
+    "stocks": "ingest/stocks/",
 }
 
 

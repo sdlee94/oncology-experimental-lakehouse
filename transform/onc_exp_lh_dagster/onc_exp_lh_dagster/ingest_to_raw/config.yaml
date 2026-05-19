@@ -4,4 +4,5 @@ athena_output_location: s3://oncology-experimental-lakehouse/athena_query_result
 
 athena_tables:
     experiments: experiments
-    inventory: inventory
+    samples: samples
+    stocks: stocks

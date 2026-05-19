@@ -2,8 +2,8 @@ WITH raw_experiments AS (
     SELECT * FROM {{ source('onc_exp_lh', 'raw_experiments') }}
 )
 SELECT
-    experiment_id,
-    experiment_name,
+    id as experiment_id,
+    name as experiment_name,
     project,
     status as experiment_status,
     CAST(run_date AS DATE) AS run_date,

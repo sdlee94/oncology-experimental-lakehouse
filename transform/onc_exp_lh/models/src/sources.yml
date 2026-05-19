@@ -5,33 +5,95 @@ sources:
     tables:
       - name: raw_experiments
         columns:
-          - name: experiment_id
-            description: "Unique identifier for each experiment."
+          - name: id
+            description: "Primary key for the raw experiments record."
+          - name: name
+            description: "Experiment name in the raw source."
           - name: project
-            description: "Project associated with the experiment."
-          - name: experiment_name
-            description: "Name of the experiment."
+            description: "Project associated with the raw experiment."
           - name: status
-            description: "Current status of the experiment."
+            description: "Raw experiment status."
           - name: run_date
-            description: "Date when the experiment was run."
+            description: "Experiment run date in the raw source."
           - name: author
-            description: "Author of the experiment."
+            description: "Author of the raw experiment."
           - name: witnessed_by
-            description: "Person who witnessed the experiment."
+            description: "Person who witnessed the raw experiment."
           - name: protocol_name
-            description: "Name of the protocol used in the experiment."
+            description: "Protocol name used by the raw experiment."
           - name: protocol_code
-            description: "Code of the protocol used in the experiment."
+            description: "Protocol code used by the raw experiment."
           - name: protocol_version
-            description: "Version of the protocol used in the experiment."
+            description: "Protocol version used by the raw experiment."
           - name: created_at
-            description: "Timestamp when the experiment record was created."
+            description: "Raw experiment creation timestamp."
           - name: signed_at
-            description: "Timestamp when the experiment was signed off."
+            description: "Raw experiment sign-off timestamp."
           - name: witnessed_at
-            description: "Timestamp when the experiment was witnessed."
+            description: "Raw experiment witnessed timestamp."
           - name: record_hash
-            description: "Hash value representing the content of the experiment record for deduplication."
+            description: "Hash for the raw experiment record."
           - name: ingest_date
-            description: "Date when the experiment record was ingested into the lakehouse."
+            description: "Raw experiment ingest date."
+      - name: raw_samples
+        columns:
+          - name: id
+            description: "Primary key for the raw sample record."
+          - name: name
+            description: "Sample name in the raw source."
+          - name: internal_code
+            description: "Internal code for the sample."
+          - name: sample_type
+            description: "Type of sample in the raw source."
+          - name: created_by
+            description: "User who created the raw sample record."
+          - name: created_at
+            description: "Raw sample creation timestamp."
+          - name: updated_at
+            description: "Raw sample last update timestamp."
+          - name: run_date
+            description: "Run date associated with the sample."
+          - name: cell_line_name
+            description: "Cell line name for the raw sample."
+          - name: tissue_origin
+            description: "Tissue origin for the raw sample."
+          - name: passage_number
+            description: "Passage number for the raw sample."
+          - name: record_hash
+            description: "Hash for the raw sample record."
+          - name: ingest_date
+            description: "Raw sample ingest date."
+      - name: raw_stocks
+        columns:
+          - name: id
+            description: "Primary key for the raw stock record."
+          - name: sample_id
+            description: "Foreign key referencing the raw sample associated with this stock."
+          - name: stock_owner
+            description: "Owner of the stock entry."
+          - name: lot_number
+            description: "Lot number for the stock entry."
+          - name: quantity
+            description: "Recorded quantity of the stock."
+          - name: quantity_unit
+            description: "Unit of measure for the stock quantity."
+          - name: concentration
+            description: "Stock concentration value."
+          - name: concentration_unit
+            description: "Unit of measure for the stock concentration."
+          - name: storage_location
+            description: "Storage location for the stock entry."
+          - name: created_at
+            description: "Raw stock creation timestamp."
+          - name: stored_at
+            description: "Date when the stock was stored."
+          - name: expiry_date
+            description: "Expiry date for the stock."
+          - name: updated_at
+            description: "Raw stock last update timestamp."
+          - name: record_hash
+            description: "Hash for the raw stock record."
+          - name: ingest_date
+            description: "Raw stock ingest date."
+
+  

@@ -10,7 +10,7 @@ from onc_exp_lh_dagster.ingest_to_raw import ingest_utils
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=f"Ingest source JSON of simulated ELN data to raw layer")
-    parser.add_argument("--dataset", required=True, choices=["experiments", "inventory"])
+    parser.add_argument("--dataset", required=True, choices=["experiments", "samples", "stocks"])
 
     parser.add_argument(
         "--source_s3_paths",
@@ -27,33 +27,22 @@ def main() -> None:
     config = ingest_utils.load_config(config_path)
 
     s3 = boto3.client('s3')
-    bucket = config['s3_bucket']
+    bucket = config["s3_bucket"]
     output_paths = []
-
     for source_s3_path in source_s3_paths:
         source_s3_key = source_s3_path.split("/", 3)[3]
         print(f"Ingesting detected file {source_s3_key} to raw layer")
 
-        # if config["local"]:
-        #     source_file_path = "experiments.json"
-        #     records = helpers.load_json_records(source_file_path)
-
-        #     df = helpers.convert_to_df_from_records(records)
-        #     df['record_hash'] = df.apply(lambda row: helpers.generate_hash(row.to_dict())['record_hash'], axis=1)
-
-        #     print(df.head(2))
-
-        #     # helpers.write_parquet(df, "experiments.parquet")
-        #     # print("Parquet file written locally: experiments.parquet")
-        #     continue
-
-        obj = ingest_utils.read_s3(s3_bucket=bucket, s3_key=source_s3_key)
+        obj = ingest_utils.read_s3(s3_bucket=config["s3_bucket"], s3_key=source_s3_key)
         records = json.loads(obj.read().decode('utf-8'))
+        print(f"Loaded {len(records)} records from source file")
 
         df = ingest_utils.convert_to_df_from_records(records)
+        print(df.head(2))
+
         df['record_hash'] = df.apply(lambda row: ingest_utils.generate_hash(row.to_dict())['record_hash'], axis=1)
 
-        # Deduplicate records by filtering out existing experiment ID + record hash pairs
+        # Deduplicate records by filtering out existing ID + record hash pairs
         df["composite_key"] = (
             df["id"] + "|" + df["record_hash"]
         )

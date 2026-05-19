@@ -40,9 +40,9 @@ def random_protocol() -> dict:
     ]
     name, code, version = random.choice(protocols)
     return {
-        "name": name,
-        "code": code,
-        "version": version
+        "protocol_name": name,
+        "protocol_code": code,
+        "protocol_version": version
     }
 
 def random_sample_name() -> str:
@@ -129,7 +129,7 @@ def generate_experiments(
 
     project = random.choice(["ONC001", "ONC002", "ONC003"])
     created_at = helpers.random_datetime_between(created_start, created_end)
-    experiment_name = f"{str(created_at.date)} {project} Experiment"
+    experiment_name = f"{created_at.date()} {project} Experiment"
     author_name = fake.name()
 
     run_date_delay = timedelta(days=random.randint(0, signed_max_delay_days))
@@ -156,7 +156,7 @@ def generate_experiments(
 
     record = {
         "experiment": {
-            "id": str(uuid.uuid4()),
+            "id": f"EXP-{uuid.uuid4().hex[:8]}",
             "project": project,
             "name": experiment_name,
             "status": random_status(signed_at, witnessed_at),
@@ -186,7 +186,7 @@ def generate_sample(created_start: datetime, created_end: datetime) -> dict[str,
 
     sample = {
         "common": {
-            "sample_id": f"SMP-{uuid.uuid4().hex[:8]}",
+            "id": f"SMP-{uuid.uuid4().hex[:8]}",
             "sample_name": random_sample_name(),
             "internal_code": f"INT-{fake.random_int(1000, 9999)}",
             "sample_type": sample_type,
@@ -210,7 +210,7 @@ def generate_stock(sample_id: str, created_start: datetime, created_end: datetim
     updated_at = stored_at + timedelta(days=random.randint(0, 30))
 
     return {
-        "stock_id": f"STK-{uuid.uuid4().hex[:8]}",
+        "id": f"STK-{uuid.uuid4().hex[:8]}",
         "sample_id": sample_id,
         "stock_owner": fake.name(),
         "lot_number": f"LOT-{fake.random_int(1000, 9999)}",
@@ -251,43 +251,42 @@ def main():
 
     inv_config = config["inventory"]
 
-    samples = [generate_sample(created_start, created_end) for _ in range(inv_config["rows_samples"])]
+    sample_data = [generate_sample(created_start, created_end) for _ in range(inv_config["rows_samples"])]
 
-    stocks = [
+    stock_data = [
         generate_stock(
-            sample_id=random.choice(samples)["common"]["sample_id"],
+            sample_id=random.choice(sample_data)["common"]["id"],
             created_start=created_start,
             created_end=created_end,
         )
         for _ in range(inv_config["rows_stocks"])
     ]
 
-    inv_data = {
-        "samples": samples,
-        "stocks": stocks,
-    }
-
-    
     exp_content = json.dumps(exp_data, indent=2, ensure_ascii=False)
-    inv_content = json.dumps(inv_data, indent=2, ensure_ascii=False)
+    sample_content = json.dumps(sample_data, indent=2, ensure_ascii=False)
+    stock_content = json.dumps(stock_data, indent=2, ensure_ascii=False)
 
     current_date = datetime.now().strftime("%Y-%m-%d")
     current_time = datetime.now().strftime("%H-%M-%S")
 
     if config["local"]:
-        Path("experiments.json").parent.mkdir(parents=True, exist_ok=True)
-        with open("experiments.json", "w", encoding="utf-8") as f:
+        with open("data/experiments.json", "w", encoding="utf-8") as f:
             f.write(exp_content)
-        with open("inventory.json", "w", encoding="utf-8") as f:
-            f.write(inv_content)
+        with open("data/samples.json", "w", encoding="utf-8") as f:
+            f.write(sample_content)
+        with open("data/stock.json", "w", encoding="utf-8") as f:
+            f.write(stock_content)
     else:
         s3_bucket = config["s3_bucket"]
         exp_s3_key = f"ingest/experiments/run_date={current_date}/{current_time}.json"
-        inv_s3_key = f"ingest/inventory/run_date={current_date}/{current_time}.json"
+        sample_s3_key = f"ingest/samples/run_date={current_date}/{current_time}.json"
+        stock_s3_key = f"ingest/stocks/run_date={current_date}/{current_time}.json"
         helpers.write_to_s3(exp_content, s3_bucket=s3_bucket, s3_key=exp_s3_key)
-        helpers.write_to_s3(inv_content, s3_bucket=s3_bucket, s3_key=inv_s3_key)
+        helpers.write_to_s3(sample_content, s3_bucket=s3_bucket, s3_key=sample_s3_key)
+        helpers.write_to_s3(stock_content, s3_bucket=s3_bucket, s3_key=stock_s3_key)
         print(f"Wrote {len(exp_data)} records to {s3_bucket}/{exp_s3_key}")
-        print(f"Wrote {len(inv_data)} records to {s3_bucket}/{inv_s3_key}")
+        print(f"Wrote {len(sample_data)} records to {s3_bucket}/{sample_s3_key}")
+        print(f"Wrote {len(stock_data)} records to {s3_bucket}/{stock_s3_key}")
 
 
 if __name__ == "__main__":

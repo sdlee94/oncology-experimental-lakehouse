@@ -1,5 +1,3 @@
-environment: dev
-
 local: FALSE
 s3_bucket: oncology-experimental-lakehouse
 
@@ -14,5 +12,5 @@ experiments:
     witnessed_max_delay_days: 7
 
 inventory:
-    rows_samples: 5
+    rows_samples: 8
     rows_stocks: 10

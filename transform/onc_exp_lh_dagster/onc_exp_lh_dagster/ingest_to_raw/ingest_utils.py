@@ -76,14 +76,13 @@ def flatten_dict(obj: Any, parent_key: str = "", sep: str = "_") -> dict[str, An
 
     if isinstance(obj, dict):
         for key, value in obj.items():
-            new_key = f"{parent_key}{sep}{key}" if parent_key else key
-            items.update(flatten_dict(value, new_key, sep))
+            items.update(flatten_dict(value, key, sep))
     elif isinstance(obj, list):
-        for index, value in enumerate(obj):
-            new_key = f"{parent_key}{sep}{index}" if parent_key else str(index)
-            items.update(flatten_dict(value, new_key, sep))
+        for value in obj:
+            items.update(flatten_dict(value, parent_key, sep))
     else:
-        items[parent_key] = obj
+        if parent_key:
+            items[parent_key] = obj
 
     return items
 
@@ -114,30 +113,29 @@ def generate_hash(record: dict) -> dict:
 
 
 def fetch_existing_keys(
-    candidate_pairs: list[tuple[str, str]],
+    candidate_pairs: list[str],
     database: str,
     table: str,
     output_location: str,
 ) -> set[str]:
     """
-    Query Athena for existing (id, record_hash) combinations.
+    Query Athena for existing composite keys.
+
+    Args:
+        candidate_pairs: list of composite keys in the form "id|record_hash"
+        database: Athena database name
+        table: Athena table name
+        output_location: S3 query result location
 
     Returns:
-        set of concatenated keys: "id|record_hash"
+        set of existing composite keys
     """
 
     if not candidate_pairs:
         return set()
 
     athena = boto3.client("athena")
-
-    # Build composite keys
-    composite_keys = [
-        f"{id}|{rec_hash}"
-        for id, rec_hash in candidate_pairs
-    ]
-
-    key_list = ",".join(f"'{k}'" for k in composite_keys)
+    key_list = ",".join(f"'{k}'" for k in candidate_pairs)
 
     query = f"""
         SELECT CONCAT(id, '|', record_hash) AS composite_key
