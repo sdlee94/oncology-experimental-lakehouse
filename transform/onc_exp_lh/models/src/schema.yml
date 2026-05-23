@@ -1,0 +1,122 @@
+models:
+  - name: stg_experiments
+    description: Cleaned and deduplicated experiment records enriched with derived lifecycle metrics and flags.
+
+    columns:
+      - name: experiment_id
+        description: Unique experiment identifier.
+        tests:
+          - not_null
+          - unique
+
+      - name: experiment_name
+        description: Trimmed experiment name.
+
+      - name: project
+        description: Project code associated with the experiment.
+
+      - name: experiment_status
+        description: Current experiment lifecycle status.
+
+      - name: run_date
+        description: Date the experiment was run.
+
+      - name: experiment_author
+        description: Standardized experiment author name.
+
+      - name: witnessed_by
+        description: Standardized witness name.
+
+      - name: protocol_name
+        description: Protocol name.
+
+      - name: protocol_code
+        description: Protocol code.
+
+      - name: protocol_version
+        description: Protocol version.
+
+      - name: created_at
+        description: Timestamp when the experiment was created.
+
+      - name: signed_at
+        description: Timestamp when the experiment was signed.
+
+      - name: witnessed_at
+        description: Timestamp when the experiment was witnessed.
+
+      - name: is_signed
+        description: Indicates whether the experiment has been signed.
+
+      - name: is_witnessed
+        description: Indicates whether the experiment has been witnessed.
+
+      - name: days_created_to_signed
+        description: Number of days between experiment creation and signing.
+
+      - name: days_signed_to_witnessed
+        description: Number of days between signing and witnessing.
+
+      - name: ingest_date
+        description: Date the record was ingested into the lakehouse.
+
+  - name: dim_experiments
+    description: Current-state experiment dimension table implementing SCD Type 1 overwrite behavior.
+
+    columns:
+      - name: experiment_id
+        description: Unique experiment identifier.
+        tests:
+          - not_null
+          - unique
+
+      - name: experiment_name
+        description: Experiment name.
+
+      - name: project
+        description: Project code associated with the experiment.
+
+      - name: experiment_status
+        description: Current experiment lifecycle status.
+
+      - name: run_date
+        description: Date the experiment was run.
+
+      - name: experiment_author
+        description: Experiment author.
+
+      - name: witnessed_by
+        description: Witness associated with the experiment.
+
+      - name: protocol_name
+        description: Protocol name.
+
+      - name: protocol_code
+        description: Protocol code.
+
+      - name: protocol_version
+        description: Protocol version.
+
+      - name: created_at
+        description: Timestamp when the experiment was created.
+
+      - name: signed_at
+        description: Timestamp when the experiment was signed.
+
+      - name: witnessed_at
+        description: Timestamp when the experiment was witnessed.
+
+      - name: is_signed
+        description: Indicates whether the experiment has been signed.
+
+      - name: is_witnessed
+        description: Indicates whether the experiment has been witnessed.
+
+      - name: days_created_to_signed
+        description: Number of days between experiment creation and signing.
+
+      - name: days_signed_to_witnessed
+        description: Number of days between signing and witnessing.
+
+      - name: ingest_date
+        description: Latest ingest date associated with the experiment record.
