@@ -94,93 +94,94 @@ def convert_to_df_from_records(records: list[dict]) -> pd.DataFrame:
     return df
 
 
-def generate_hash(record: dict) -> dict:
-    # deterministic hash from normalized record payload
-    canonical_json = json.dumps(
-        record,
-        sort_keys=True,
-        separators=(",", ":"),
-        ensure_ascii=False
-    )
+# def generate_hash(record: dict) -> dict:
+#     # deterministic hash from normalized record payload
+#     canonical_json = json.dumps(
+#         record,
+#         sort_keys=True,
+#         separators=(",", ":"),
+#         ensure_ascii=False
+#     )
 
-    record_hash = hashlib.sha256(
-        canonical_json.encode("utf-8")
-    ).hexdigest()[:12]
+#     record_hash = hashlib.sha256(
+#         canonical_json.encode("utf-8")
+#     ).hexdigest()[:12]
 
-    return {
-        "record_hash": record_hash,
-    }
+#     return {
+#         "record_hash": record_hash,
+#     }
 
 
-def fetch_existing_keys(
-    candidate_pairs: list[str],
-    database: str,
-    table: str,
-    output_location: str,
-) -> set[str]:
-    """
-    Query Athena for existing composite keys.
+# def fetch_existing_keys(
+#     candidate_pairs: list[str],
+#     database: str,
+#     table: str,
+#     output_location: str,
+# ) -> set[str]:
+#     """
+#     Query Athena for existing composite keys.
 
-    Args:
-        candidate_pairs: list of composite keys in the form "id|record_hash"
-        database: Athena database name
-        table: Athena table name
-        output_location: S3 query result location
+#     Args:
+#         candidate_pairs: list of composite keys in the form "id|record_hash"
+#         database: Athena database name
+#         table: Athena table name
+#         output_location: S3 query result location
 
-    Returns:
-        set of existing composite keys
-    """
+#     Returns:
+#         set of existing composite keys
+#     """
 
-    if not candidate_pairs:
-        return set()
+#     if not candidate_pairs:
+#         return set()
 
-    athena = boto3.client("athena")
-    key_list = ",".join(f"'{k}'" for k in candidate_pairs)
+#     athena = boto3.client("athena")
+#     candidate_pairs = list(dict.fromkeys(candidate_pairs))
+#     key_list = ",".join(f"'{k}'" for k in candidate_pairs)
 
-    query = f"""
-        SELECT CONCAT(id, '|', record_hash) AS composite_key
-        FROM "{database}"."{table}"
-        WHERE CONCAT(id, '|', record_hash) IN ({key_list})
-    """
+#     query = f"""
+#         SELECT CONCAT(id, '|', record_hash) AS composite_key
+#         FROM "{database}"."{table}"
+#         WHERE CONCAT(id, '|', record_hash) IN ({key_list})
+#     """
 
-    response = athena.start_query_execution(
-        QueryString=query,
-        QueryExecutionContext={"Database": database},
-        ResultConfiguration={
-            "OutputLocation": output_location
-        },
-    )
+#     response = athena.start_query_execution(
+#         QueryString=query,
+#         QueryExecutionContext={"Database": database},
+#         ResultConfiguration={
+#             "OutputLocation": output_location
+#         },
+#     )
 
-    execution_id = response["QueryExecutionId"]
+#     execution_id = response["QueryExecutionId"]
 
-    # Wait for completion
-    while True:
-        execution = athena.get_query_execution(QueryExecutionId=execution_id)["QueryExecution"]
-        status = execution["Status"]["State"]   
+#     # Wait for completion
+#     while True:
+#         execution = athena.get_query_execution(QueryExecutionId=execution_id)["QueryExecution"]
+#         status = execution["Status"]["State"]   
 
-        if status in ("SUCCEEDED", "FAILED", "CANCELLED"):
-            break
+#         if status in ("SUCCEEDED", "FAILED", "CANCELLED"):
+#             break
 
-        time.sleep(1)
+#         time.sleep(1)
 
-    if status != "SUCCEEDED":
-        reason = execution["Status"].get("StateChangeReason", "Unknown error")
-        if ("does not exist" in reason.lower() or 
-            "not found" in reason.lower() or 
-            "invalid" in reason.lower()):
-            # Table or database doesn't exist yet, so no existing keys
-            return set()
-        raise Exception(f"Athena composite key lookup failed: {reason}")
+#     if status != "SUCCEEDED":
+#         reason = execution["Status"].get("StateChangeReason", "Unknown error")
+#         if ("does not exist" in reason.lower() or 
+#             "not found" in reason.lower() or 
+#             "invalid" in reason.lower()):
+#             # Table or database doesn't exist yet, so no existing keys
+#             return set()
+#         raise Exception(f"Athena composite key lookup failed: {reason}")
 
-    rows = athena.get_query_results(
-        QueryExecutionId=execution_id
-    )["ResultSet"]["Rows"]
+#     rows = athena.get_query_results(
+#         QueryExecutionId=execution_id
+#     )["ResultSet"]["Rows"]
 
-    existing = set()
+#     existing = set()
 
-    for row in rows[1:]:  # skip header
-        existing.add(row["Data"][0]["VarCharValue"])
+#     for row in rows[1:]:  # skip header
+#         existing.add(row["Data"][0]["VarCharValue"])
 
-    print(f"Found {len(existing)} existing records in Athena")
+#     print(f"Found {len(existing)} existing records in Athena")
 
-    return existing
+#     return existing

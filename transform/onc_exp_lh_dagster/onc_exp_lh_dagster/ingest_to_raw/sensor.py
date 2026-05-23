@@ -30,6 +30,7 @@ def ingest_sensor(context):
 
     bucket_name = "oncology-experimental-lakehouse"
 
+    context.log.info("Starting ingest_sensor tick")
     cursor_data = json.loads(context.cursor or "{}")
     processed_files = set(cursor_data.get("processed_files", []))
 
@@ -46,6 +47,7 @@ def ingest_sensor(context):
                     new_files_by_dataset[dataset].append(key)
 
     if not any(new_files_by_dataset.values()):
+        context.log.info("No new source files detected")
         return SkipReason("No new source files detected")
 
     run_requests = []

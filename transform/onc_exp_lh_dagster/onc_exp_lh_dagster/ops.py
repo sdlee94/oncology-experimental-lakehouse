@@ -1,4 +1,5 @@
 from dagster import (
+    OpExecutionContext,
     op,
     Out,
     graph
@@ -13,7 +14,7 @@ from botocore.exceptions import ClientError
 
 INGEST_SCRIPT_PATH = "onc_exp_lh_dagster.ingest_to_raw.ingest_to_raw"
 
-def _run_ingest_to_raw(dataset: str, source_s3_paths: list[str]) -> dict:
+def _run_ingest_to_raw(context: OpExecutionContext, dataset: str, source_s3_paths: list[str]) -> dict:
     if not isinstance(source_s3_paths, list):
         source_s3_paths = [source_s3_paths]
 
@@ -30,10 +31,15 @@ def _run_ingest_to_raw(dataset: str, source_s3_paths: list[str]) -> dict:
             check=True,
         )
     except subprocess.CalledProcessError as e:
-        print(f"Subprocess failed with return code {e.returncode}")
-        print(f"STDOUT: {e.stdout}")
-        print(f"STDERR: {e.stderr}")
+        context.log.error(f"Subprocess failed with return code {e.returncode}")
+        context.log.error(f"STDOUT: {e.stdout}")
+        context.log.error(f"STDERR: {e.stderr}")
         raise e
+
+    if result.stdout:
+        context.log.info(f"Ingest subprocess output:\n{result.stdout.strip()}")
+    if result.stderr:
+        context.log.warning(f"Ingest subprocess stderr:\n{result.stderr.strip()}")
 
     output_lines = result.stdout.strip().split("\n")
     s3_paths = []
@@ -68,7 +74,7 @@ def run_ingest_to_raw(context) -> dict:
     dataset = context.op_config["dataset"]
     source_s3_paths = context.op_config["source_s3_paths"]
     
-    return _run_ingest_to_raw(dataset, source_s3_paths)
+    return _run_ingest_to_raw(context, dataset, source_s3_paths)
 
 
 @op(
@@ -82,10 +88,10 @@ def trigger_glue_crawler(context, ingest_metadata: dict) -> dict:
     crawler_name = f"raw_{dataset}"
 
     try:
-        context.log.info(f"Triggering Glue crawler: {crawler_name}")
+        # context.log.info(f"Triggering Glue crawler: {crawler_name}")
         response = glue_client.start_crawler(Name=crawler_name)
         
-        context.log.info(f"✅ Crawler triggered: {response['ResponseMetadata']['HTTPHeaders']['x-amzn-requestid']}")
+        context.log.info(f"✅ Crawler triggered successfully: {crawler_name}")
         
         return {
             "crawler_name": crawler_name,
@@ -136,7 +142,7 @@ def validate_athena_access(context, crawler_result: dict) -> dict:
         )
         
         query_execution_id = response['QueryExecutionId']
-        context.log.info(f"Athena query started: {query_execution_id}")
+        context.log.info(f"Athena query started")
         
         return {
             "query_execution_id": query_execution_id,
