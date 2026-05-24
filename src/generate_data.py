@@ -415,7 +415,6 @@ def generate_ab_screening_result(
         "measurement_timepoint_hours": random.choice([4, 24, 48, 72]),
         "instrument_name": random.choice(assay["instrument_names"]),
         "qc_flag": qc_flag,
-        "ingest_date": datetime.now().date().isoformat(),
     }
 
 
