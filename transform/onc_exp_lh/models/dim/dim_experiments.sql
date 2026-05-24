@@ -1,0 +1,22 @@
+{{ config(
+    materialized='incremental',
+    table_type='iceberg',
+    unique_key='experiment_id',
+    incremental_strategy='merge',
+    external_location='s3://oncology-experimental-lakehouse/curate/dim_experiments/',
+) }}
+
+with src_experiments as (
+    select *
+    from {{ ref('src_experiments') }}
+    {% if is_incremental() %}
+        where ingest_date >= (
+            select max(ingest_date) from {{ this }}
+        )
+    {% endif %}
+)
+
+select
+    *,
+    cast(current_timestamp as timestamp) as dbt_updated_at
+from src_experiments

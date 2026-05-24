@@ -1,65 +1,4 @@
 models:
-  - name: stg_experiments
-    description: Cleaned and deduplicated experiment records enriched with derived lifecycle metrics and flags.
-
-    columns:
-      - name: experiment_id
-        description: Unique experiment identifier.
-        tests:
-          - not_null
-          - unique
-
-      - name: experiment_name
-        description: Trimmed experiment name.
-
-      - name: project
-        description: Project code associated with the experiment.
-
-      - name: experiment_status
-        description: Current experiment lifecycle status.
-
-      - name: run_date
-        description: Date the experiment was run.
-
-      - name: experiment_author
-        description: Standardized experiment author name.
-
-      - name: witnessed_by
-        description: Standardized witness name.
-
-      - name: protocol_name
-        description: Protocol name.
-
-      - name: protocol_code
-        description: Protocol code.
-
-      - name: protocol_version
-        description: Protocol version.
-
-      - name: created_at
-        description: Timestamp when the experiment was created.
-
-      - name: signed_at
-        description: Timestamp when the experiment was signed.
-
-      - name: witnessed_at
-        description: Timestamp when the experiment was witnessed.
-
-      - name: is_signed
-        description: Indicates whether the experiment has been signed.
-
-      - name: is_witnessed
-        description: Indicates whether the experiment has been witnessed.
-
-      - name: days_created_to_signed
-        description: Number of days between experiment creation and signing.
-
-      - name: days_signed_to_witnessed
-        description: Number of days between signing and witnessing.
-
-      - name: ingest_date
-        description: Date the record was ingested into the lakehouse.
-
   - name: dim_experiments
     description: Current-state experiment dimension table implementing SCD Type 1 overwrite behavior.
 
@@ -86,22 +25,22 @@ models:
         description: Experiment author.
 
       - name: witnessed_by
-        description: Witness associated with the experiment.
+        description: Person who witnessed the experiment.
 
       - name: protocol_name
-        description: Protocol name.
+        description: Name of the protocol used.
 
       - name: protocol_code
-        description: Protocol code.
+        description: Protocol code used for the experiment.
 
       - name: protocol_version
-        description: Protocol version.
+        description: Protocol version used for the experiment.
 
       - name: created_at
         description: Timestamp when the experiment was created.
 
       - name: signed_at
-        description: Timestamp when the experiment was signed.
+        description: Timestamp when the experiment was signed by the author.
 
       - name: witnessed_at
         description: Timestamp when the experiment was witnessed.
@@ -120,3 +59,173 @@ models:
 
       - name: ingest_date
         description: Latest ingest date associated with the experiment record.
+
+      - name: dbt_updated_at
+        description: Timestamp when the dbt model last updated the record.
+
+  - name: dim_samples
+    description: Current-state sample dimension table implementing SCD Type 1 overwrite behavior.
+
+    columns:
+      - name: sample_id
+        description: Unique sample identifier.
+        tests:
+          - not_null
+          - unique
+
+      - name: sample_name
+        description: Sample name.
+
+      - name: internal_code
+        description: Internal sample tracking code.
+
+      - name: sample_type
+        description: Type of sample, such as cell line, plasma fraction, protein extract, tumor sample, PBMC, or antibody candidate.
+
+      - name: created_by
+        description: Person who created the sample record.
+
+      - name: created_at
+        description: Timestamp when the sample record was created.
+
+      - name: updated_at
+        description: Timestamp when the sample record was last updated.
+
+      - name: cell_line_name
+        description: Name of the cell line, if applicable.
+
+      - name: cell_line_tissue_origin
+        description: Tissue origin of the cell line, if applicable.
+
+      - name: cell_line_passage_number
+        description: Passage number of the cell line, if applicable.
+
+      - name: plasma_fraction_type
+        description: Plasma fraction type, if applicable.
+
+      - name: plasma_donor_pool_size
+        description: Number of donors represented in the plasma pool, if applicable.
+
+      - name: plasma_pathogen_screening_status
+        description: Pathogen screening status for the plasma sample, if applicable.
+
+      - name: plasma_storage_temperature_c
+        description: Plasma storage temperature in Celsius, if applicable.
+
+      - name: protein_source_material
+        description: Source material used for protein extraction, if applicable.
+
+      - name: protein_lysis_buffer
+        description: Lysis buffer used for protein extraction, if applicable.
+
+      - name: protein_yield_mg
+        description: Protein yield in milligrams, if applicable.
+
+      - name: protein_purity_percent
+        description: Protein purity percentage, if applicable.
+
+      - name: tumor_type
+        description: Tumor type, if applicable.
+
+      - name: tumor_stage
+        description: Tumor stage, if applicable.
+
+      - name: tumor_collection_site
+        description: Tumor collection site, if applicable.
+
+      - name: tumor_necrosis_percent
+        description: Tumor necrosis percentage, if applicable.
+
+      - name: pbmc_donor_id
+        description: PBMC donor identifier, if applicable.
+
+      - name: pbmc_viability_percent
+        description: PBMC viability percentage, if applicable.
+
+      - name: pbmc_isolation_method
+        description: PBMC isolation method, if applicable.
+
+      - name: pbmc_cryopreserved
+        description: Indicates whether the PBMC sample was cryopreserved, if applicable.
+
+      - name: antibody_format
+        description: Antibody format, if applicable.
+
+      - name: antibody_target_antigen
+        description: Antibody target antigen, if applicable.
+
+      - name: antibody_clone_id
+        description: Antibody clone identifier, if applicable.
+
+      - name: antibody_binding_affinity_nm
+        description: Antibody binding affinity in nanomolar, if applicable.
+
+      - name: antibody_humanized
+        description: Indicates whether the antibody candidate is humanized, if applicable.
+
+      - name: ingest_date
+        description: Latest ingest date associated with the sample record.
+
+      - name: dbt_updated_at
+        description: Timestamp when the dbt model last updated the record.
+
+  - name: dim_stocks
+    description: Current-state stock inventory dimension table implementing SCD Type 1 overwrite behavior.
+
+    columns:
+      - name: stock_id
+        description: Unique stock inventory identifier.
+        tests:
+          - not_null
+          - unique
+
+      - name: sample_id
+        description: Identifier of the associated sample.
+
+      - name: stock_owner
+        description: Owner of the stock inventory.
+
+      - name: lot_number
+        description: Lot number associated with the stock inventory.
+
+      - name: quantity
+        description: Quantity currently available in inventory.
+
+      - name: quantity_unit
+        description: Unit associated with the stock quantity.
+
+      - name: concentration
+        description: Concentration of the stock material.
+
+      - name: concentration_unit
+        description: Unit associated with the concentration measurement.
+
+      - name: storage_location
+        description: Storage location of the stock inventory.
+
+      - name: created_at
+        description: Timestamp when the stock inventory record was created.
+
+      - name: stored_at
+        description: Timestamp when the stock material was stored.
+
+      - name: expiry_date
+        description: Expiration date of the stock material.
+
+      - name: updated_at
+        description: Timestamp when the stock inventory record was last updated.
+
+      - name: is_expired
+        description: Indicates whether the stock material is expired.
+
+      - name: is_depleted
+        description: Indicates whether the stock quantity is depleted.
+
+      - name: days_until_expiry
+        description: Number of days remaining until the stock material expires.
+
+      - name: ingest_date
+        description: Latest ingest date associated with the stock inventory record.
+
+      - name: dbt_updated_at
+        description: Timestamp when the dbt model last updated the record.
