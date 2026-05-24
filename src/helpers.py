@@ -19,18 +19,26 @@ def load_json_records(path: str) -> list[dict]:
         return json.load(f)
 
 
-def iso_or_none(value: Optional[datetime]) -> Optional[str]:
-    return value.isoformat(timespec="seconds") if value else None
+def athena_timestamp(dt: datetime) -> str:
+    return dt.strftime("%Y-%m-%d %H:%M:%S")
+
+
+def athena_timestamp_or_none(value: Optional[datetime]) -> Optional[str]:
+    return athena_timestamp(value) if value else None
+
+
+# def isoformat(dt: datetime) -> str:
+#     return dt.isoformat(timespec="seconds")
+
+
+# def iso_or_none(value: Optional[datetime]) -> Optional[str]:
+#     return value.isoformat(timespec="seconds") if value else None
 
 
 def random_datetime_between(start: datetime, end: datetime) -> datetime:
     total_seconds = int((end - start).total_seconds())
     offset = random.randint(0, max(total_seconds, 0))
     return start + timedelta(seconds=offset)
-
-
-def isoformat(dt: datetime) -> str:
-    return dt.isoformat(timespec="seconds")
 
 
 def maybe_datetime_after(

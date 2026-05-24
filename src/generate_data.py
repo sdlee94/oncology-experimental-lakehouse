@@ -254,9 +254,9 @@ def generate_experiments(
         "protocol": protocol,
 
         "timestamps": {
-            "created_at": helpers.iso_or_none(created_at),
-            "signed_at": helpers.iso_or_none(signed_at),
-            "witnessed_at": helpers.iso_or_none(witnessed_at)
+            "created_at": helpers.athena_timestamp_or_none(created_at),
+            "signed_at": helpers.athena_timestamp_or_none(signed_at),
+            "witnessed_at": helpers.athena_timestamp_or_none(witnessed_at)
         }
     }
 
@@ -274,8 +274,8 @@ def generate_sample(created_start: datetime, created_end: datetime) -> dict[str,
             "internal_code": f"INT-{fake.random_int(1000, 9999)}",
             "sample_type": sample_type,
             "created_by": fake.name(),
-            "created_at": helpers.isoformat(created_at),
-            "updated_at": helpers.isoformat(updated_at),
+            "created_at": helpers.athena_timestamp_or_none(created_at),
+            "updated_at": helpers.athena_timestamp_or_none(updated_at),
         }
     }
 
@@ -302,10 +302,10 @@ def generate_stock(sample_id: str, created_start: datetime, created_end: datetim
         "concentration": random_concentration(),
         "concentration_unit": random_concentration_unit(),
         "storage_location": random_storage_location(),
-        "created_at": helpers.isoformat(created_at),
-        "stored_at": helpers.isoformat(stored_at),
+        "created_at": helpers.athena_timestamp_or_none(created_at),
+        "stored_at": helpers.athena_timestamp_or_none(stored_at),
         "expiry_date": expiry_date.date().isoformat(),
-        "updated_at": helpers.isoformat(updated_at),
+        "updated_at": helpers.athena_timestamp_or_none(updated_at),
     }
 
 
