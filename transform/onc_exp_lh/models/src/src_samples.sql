@@ -1,15 +1,29 @@
 WITH raw_samples AS (
     SELECT * FROM {{ source('onc_exp_lh', 'raw_samples') }}
+),
+
+deduplicated as (
+    select *
+    from (
+        select
+            *,
+            row_number() over (
+                partition by id
+                order by cast(ingest_date as date) desc, cast(updated_at as timestamp) desc
+            ) as row_num
+        from raw_samples
+    )
+    where row_num = 1
 )
-SELECT
+
+select
     id as sample_id,
-    name as sample_name,
+    trim(sample_name) as sample_name,
     internal_code,
     sample_type,
     created_by,
-    CAST(created_at AS TIMESTAMP) AS created_at,
-    CAST(updated_at AS TIMESTAMP) AS updated_at,
-    CAST(run_date AS DATE) AS run_date,
+    cast(created_at as timestamp) as created_at,
+    cast(nullif(updated_at, '') as timestamp) as updated_at,
     cell_line_name,
     cell_line_tissue_origin,
     cell_line_passage_number,
@@ -34,7 +48,5 @@ SELECT
     antibody_clone_id,
     antibody_binding_affinity_nm,
     antibody_humanized,
-    record_hash,
-    CAST(ingest_date AS DATE) AS ingest_date
-FROM
-    raw_samples
+    cast(ingest_date as date) as ingest_date
+from deduplicated

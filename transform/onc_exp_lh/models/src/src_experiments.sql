@@ -9,7 +9,7 @@ deduplicated as (
             *,
             row_number() over (
                 partition by id
-                order by ingest_date desc
+                order by cast(ingest_date as date) desc
             ) as row_num
         from raw_experiments
     )
