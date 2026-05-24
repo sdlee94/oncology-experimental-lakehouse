@@ -96,4 +96,81 @@ sources:
           - name: ingest_date
             description: "Raw stock ingest date."
 
-  
+      - name: raw_screening_results
+        description: Raw antibody screening assay result records ingested from experimental assay pipelines.
+
+        columns:
+          - name: result_id
+            description: Unique screening result identifier.
+            tests:
+              - not_null
+              - unique
+
+          - name: experiment_id
+            description: Identifier of the associated experiment.
+
+          - name: sample_id
+            description: Identifier of the associated antibody candidate sample.
+
+          - name: stock_id
+            description: Identifier of the associated stock inventory record.
+
+          - name: protocol_code
+            description: Protocol code associated with the assay workflow.
+
+          - name: protocol_name
+            description: Name of the assay protocol.
+
+          - name: protocol_version
+            description: Version of the assay protocol.
+
+          - name: antibody_clone_id
+            description: Identifier of the antibody clone being screened.
+
+          - name: antibody_target_antigen
+            description: Target antigen of the antibody candidate.
+
+          - name: antibody_format
+            description: Antibody molecular format.
+
+          - name: antibody_humanized
+            description: Indicates whether the antibody candidate is humanized.
+
+          - name: assay_category
+            description: High-level category of the assay.
+
+          - name: assay_name
+            description: Name of the screening assay.
+
+          - name: endpoint_name
+            description: Measured assay endpoint.
+
+          - name: endpoint_unit
+            description: Unit associated with the endpoint measurement.
+
+          - name: endpoint_value
+            description: Numeric value of the assay endpoint measurement.
+
+          - name: treatment_concentration
+            description: Concentration of treatment material applied during the assay.
+
+          - name: treatment_concentration_unit
+            description: Unit associated with the treatment concentration.
+
+          - name: control_type
+            description: Experimental control designation.
+
+          - name: replicate_number
+            description: Replicate number associated with the assay measurement.
+
+          - name: measurement_timepoint_hours
+            description: Timepoint in hours when the assay measurement was captured.
+
+          - name: instrument_name
+            description: Instrument used to generate the assay measurement.
+
+          - name: qc_flag
+            description: Quality control status associated with the result.
+
+          - name: ingest_date
+            description: Lakehouse ingestion partition date associated with the record.

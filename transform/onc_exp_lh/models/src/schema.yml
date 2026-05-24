@@ -229,3 +229,85 @@ models:
 
       - name: dbt_updated_at
         description: Timestamp when the dbt model last updated the record.
+
+  - name: fct_screening_results
+    description: Fact table containing antibody screening assay result measurements generated from oncology immunotherapy R&D workflows.
+
+    columns:
+      - name: result_id
+        description: Unique screening result identifier.
+        tests:
+          - not_null
+          - unique
+
+      - name: experiment_id
+        description: Identifier of the associated experiment.
+        tests:
+          - relationships:
+              to: ref('dim_experiments')
+              field: experiment_id
+
+      - name: sample_id
+        description: Identifier of the associated antibody candidate sample.
+        tests:
+          - relationships:
+              to: ref('dim_samples')
+              field: sample_id
+
+      - name: stock_id
+        description: Identifier of the associated stock inventory record.
+        tests:
+          - relationships:
+              to: ref('dim_stocks')
+              field: stock_id
+
+      - name: protocol_code
+        description: Protocol code associated with the assay workflow.
+
+      - name: assay_name
+        description: Name of the screening assay.
+
+      - name: assay_category
+        description: High-level category of the screening assay.
+
+      - name: endpoint_name
+        description: Measured assay endpoint.
+
+      - name: endpoint_unit
+        description: Unit associated with the endpoint measurement.
+
+      - name: replicate_number
+        description: Replicate number associated with the assay measurement.
+
+      - name: endpoint_value
+        description: Numeric value of the assay endpoint measurement.
+
+      - name: treatment_concentration
+        description: Concentration of treatment material applied during the assay.
+
+      - name: treatment_concentration_unit
+        description: Unit associated with the treatment concentration.
+
+      - name: measurement_timepoint_hours
+        description: Timepoint in hours when the assay measurement was captured.
+
+      - name: control_type
+        description: Experimental control designation.
+
+      - name: qc_flag
+        description: Quality control status associated with the result.
+
+      - name: is_qc_pass
+        description: Indicates whether the result passed quality control checks.
+
+      - name: is_control
+        description: Indicates whether the result corresponds to a control condition rather than a test article.
+
+      - name: instrument_name
+        description: Instrument used to generate the assay measurement.
+
+      - name: ingest_date
+        description: Latest ingest date associated with the screening result record.
+
+      - name: dbt_updated_at
+        description: Timestamp when the dbt model last updated the record.
