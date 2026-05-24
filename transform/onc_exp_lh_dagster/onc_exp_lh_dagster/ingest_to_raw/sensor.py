@@ -17,6 +17,7 @@ DATASET_PREFIXES = {
     "experiments": "ingest/experiments/",
     "samples": "ingest/samples/",
     "stocks": "ingest/stocks/",
+    "screening_results": "ingest/screening_results/",
 }
 
 
