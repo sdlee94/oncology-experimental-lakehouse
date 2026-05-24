@@ -11,6 +11,60 @@ import helpers
 fake = Faker()
 
 # -----------------------------
+# Constants
+# -----------------------------
+ANTIBODY_RELEVANT_PROTOCOLS = [
+    ("Cytokine Release ELISA Assay", "ICI-1003", "v2.4"),
+    ("Multiplex Cytokine Panel Assay", "ICI-1004", "v1.8"),
+    ("Immune Cell Cytotoxicity Assay", "ICI-1005", "v2.2"),
+    ("Checkpoint Reporter Gene Assay", "ICI-1006", "v2.7"),
+    ("Anti Drug Antibody Screen", "ICI-1009", "v2.0"),
+]
+
+ANTIBODY_SCREENING_ASSAYS = {
+    "ICI-1003": {
+        "assay_category": "Cytokine Release",
+        "assay_name": "Cytokine Release ELISA Assay",
+        "endpoint_name": "IL-2",
+        "endpoint_unit": "pg/mL",
+        "instrument_names": ["SpectraMax i3x", "BioTek Synergy H1"],
+        "value_range": (10, 3000),
+    },
+    "ICI-1004": {
+        "assay_category": "Cytokine Release",
+        "assay_name": "Multiplex Cytokine Panel Assay",
+        "endpoint_name": "IFN-gamma",
+        "endpoint_unit": "pg/mL",
+        "instrument_names": ["Luminex MAGPIX", "Luminex FLEXMAP 3D"],
+        "value_range": (10, 5000),
+    },
+    "ICI-1005": {
+        "assay_category": "Tumor Cell Killing",
+        "assay_name": "Immune Cell Cytotoxicity Assay",
+        "endpoint_name": "Cytotoxicity",
+        "endpoint_unit": "%",
+        "instrument_names": ["Incucyte SX5", "Agilent BioTek Cytation 5"],
+        "value_range": (5, 95),
+    },
+    "ICI-1006": {
+        "assay_category": "Checkpoint Reporter Activity",
+        "assay_name": "Checkpoint Reporter Gene Assay",
+        "endpoint_name": "Reporter Inhibition",
+        "endpoint_unit": "%",
+        "instrument_names": ["Promega GloMax", "SpectraMax i3x"],
+        "value_range": (0, 100),
+    },
+    "ICI-1009": {
+        "assay_category": "Antibody Binding",
+        "assay_name": "Anti Drug Antibody Screen",
+        "endpoint_name": "Binding Affinity",
+        "endpoint_unit": "nM",
+        "instrument_names": ["Octet RED96e", "Biacore T200"],
+        "value_range": (0.01, 500),
+    },
+}
+
+# -----------------------------
 # Field generators
 # -----------------------------
 def random_status(signed_at, witnessed_at) -> str:
@@ -25,8 +79,8 @@ def random_experiment_name() -> str:
     return f"{fake.word().capitalize()} {random.choice(['Study','Experiment','Run','Assay','Screen'])}"
 
 
-def random_protocol() -> dict:
-    protocols = [
+def random_protocol(antibody_relevant_only: bool = False) -> dict:
+    protocols = ANTIBODY_RELEVANT_PROTOCOLS if antibody_relevant_only else [
         ("Immune Receptor Flow Cytometry Assay", "ICI-1001", "v2.1"),
         ("T Cell Activation Co-Culture Assay", "ICI-1002", "v3.0"),
         ("Cytokine Release ELISA Assay", "ICI-1003", "v2.4"),
@@ -36,13 +90,15 @@ def random_protocol() -> dict:
         ("Serum Stability Study", "ICI-1007", "v1.9"),
         ("Pharmacokinetic Bioanalysis Assay", "ICI-1008", "v2.5"),
         ("Anti Drug Antibody Screen", "ICI-1009", "v2.0"),
-        ("Dose Escalation Toxicology Study", "ICI-1010", "v3.1")
+        ("Dose Escalation Toxicology Study", "ICI-1010", "v3.1"),
     ]
+
     name, code, version = random.choice(protocols)
+
     return {
         "protocol_name": name,
         "protocol_code": code,
-        "protocol_version": version
+        "protocol_version": version,
     }
 
 def random_sample_name() -> str:
@@ -134,7 +190,6 @@ def random_pbmc():
         "pbmc_cryopreserved": random.choice([True, False]),
     }
 
-
 def random_antibody_candidate():
     formats = ["IgG1", "IgG4", "Bispecific", "Fab"]
 
@@ -182,21 +237,18 @@ def random_storage_location() -> str:
     ]
     return random.choice(locations)
 
-
 def random_quantity() -> float:
     return round(random.uniform(0.5, 100.0), 2)
-
 
 def random_quantity_unit() -> str:
     return random.choice(["mL", "uL", "g", "mg", "units"])
 
-
 def random_concentration() -> float:
     return round(random.uniform(0.01, 50.0), 3)
 
-
 def random_concentration_unit() -> str:
     return random.choice(["mg/mL", "ug/uL", "nM", "uM", "%"])
+
 
 # -----------------------------
 # Core generators
@@ -208,6 +260,7 @@ def generate_experiments(
     signed_max_delay_days: int,
     witnessed_probability: float,
     witnessed_max_delay_days: int,
+    antibody_relevant_only: bool = False,
 ) -> dict:
 
     project = random.choice(["ONC001", "ONC002", "ONC003"])
@@ -216,7 +269,10 @@ def generate_experiments(
     author_name = fake.name()
 
     run_date_delay = timedelta(days=random.randint(0, signed_max_delay_days))
-    protocol = random_protocol()
+
+    protocol = random_protocol(
+        antibody_relevant_only=antibody_relevant_only
+    )
 
     signed_at = helpers.maybe_datetime_after(
         created_at,
@@ -262,8 +318,12 @@ def generate_experiments(
 
     return record
 
-def generate_sample(created_start: datetime, created_end: datetime) -> dict[str, Any]:
-    sample_type = random_sample_type()
+def generate_sample(
+    created_start: datetime, 
+    created_end: datetime,
+    sample_type: str | None = None,
+) -> dict[str, Any]:
+    sample_type = sample_type or random_sample_type()
     created_at = helpers.random_datetime_between(created_start, created_end)
     updated_at = created_at + timedelta(days=random.randint(0, 30))
 
@@ -309,6 +369,56 @@ def generate_stock(sample_id: str, created_start: datetime, created_end: datetim
     }
 
 
+def generate_ab_screening_result(
+    experiment: dict[str, Any],
+    stock: dict[str, Any],
+    sample: dict[str, Any],
+) -> dict[str, Any]:
+    protocol = experiment["protocol"]
+    protocol_code = protocol["protocol_code"]
+
+    if protocol_code not in ANTIBODY_SCREENING_ASSAYS:
+        raise ValueError(f"Protocol code {protocol_code} is not antibody-screening relevant.")
+
+    if sample["common"]["sample_type"] != "antibody_candidate":
+        raise ValueError(f"Sample {sample['common']['id']} is not an antibody candidate.")
+
+    if stock["sample_id"] != sample["common"]["id"]:
+        raise ValueError("Selected stock does not belong to the selected antibody candidate sample.")
+
+    assay = ANTIBODY_SCREENING_ASSAYS[protocol_code]
+    min_value, max_value = assay["value_range"]
+
+    qc_flag = "Pass" if random.random() >= 0.05 else "Review"
+
+    return {
+        "result_id": f"RES-{uuid.uuid4().hex[:10]}",
+        "experiment_id": experiment["experiment"]["id"],
+        "stock_id": stock["id"],
+        "sample_id": sample["common"]["id"],
+        "protocol_code": protocol["protocol_code"],
+        "protocol_name": protocol["protocol_name"],
+        "protocol_version": protocol["protocol_version"],
+        "antibody_clone_id": sample["antibody_candidate"]["antibody_clone_id"],
+        "antibody_target_antigen": sample["antibody_candidate"]["antibody_target_antigen"],
+        "antibody_format": sample["antibody_candidate"]["antibody_format"],
+        "antibody_humanized": sample["antibody_candidate"]["antibody_humanized"],
+        "assay_category": assay["assay_category"],
+        "assay_name": assay["assay_name"],
+        "endpoint_name": assay["endpoint_name"],
+        "endpoint_unit": assay["endpoint_unit"],
+        "endpoint_value": round(random.uniform(min_value, max_value), 3),
+        "treatment_concentration": random.choice([0.1, 1, 10, 100]),
+        "treatment_concentration_unit": "nM",
+        "control_type": "Test Article",
+        "replicate_number": 1,
+        "measurement_timepoint_hours": random.choice([4, 24, 48, 72]),
+        "instrument_name": random.choice(assay["instrument_names"]),
+        "qc_flag": qc_flag,
+        "ingest_date": datetime.now().date().isoformat(),
+    }
+
+
 # -----------------------------
 # Main function
 # -----------------------------
@@ -334,20 +444,81 @@ def main():
 
     inv_config = config["inventory"]
 
-    sample_data = [generate_sample(created_start, created_end) for _ in range(inv_config["rows_samples"])]
+    # Ensure a minimum of antibody candidate samples are generated
+    min_antibody_samples = 3
+    antibody_sample_data = [
+        generate_sample(
+            created_start=created_start,
+            created_end=created_end,
+            sample_type="antibody_candidate",
+        )
+        for _ in range(min_antibody_samples)
+    ]
+
+    remaining_sample_count = max(inv_config["rows_samples"] - min_antibody_samples, 0)
+    sample_data = antibody_sample_data + [
+        generate_sample(created_start, created_end)
+        for _ in range(remaining_sample_count)
+    ]
 
     stock_data = [
+        generate_stock(
+            sample_id=sample["common"]["id"],
+            created_start=created_start,
+            created_end=created_end,
+        )
+        for sample in antibody_sample_data
+    ]
+
+    remaining_stock_count = max(inv_config["rows_stocks"] - len(stock_data), 0)
+    stock_data.extend([
         generate_stock(
             sample_id=random.choice(sample_data)["common"]["id"],
             created_start=created_start,
             created_end=created_end,
         )
-        for _ in range(inv_config["rows_stocks"])
+        for _ in range(remaining_stock_count)
+    ])
+
+    antibody_sample_by_id = {
+        sample["common"]["id"]: sample
+        for sample in antibody_sample_data
+    }
+
+    antibody_stocks = [
+        stock
+        for stock in stock_data
+        if stock["sample_id"] in antibody_sample_by_id
     ]
+
+    screening_experiments = [
+        generate_experiments(
+            created_start,
+            created_end,
+            exp_config["signed_probability"],
+            exp_config["signed_max_delay_days"],
+            exp_config["witnessed_probability"],
+            exp_config["witnessed_max_delay_days"],
+            antibody_relevant_only=True,
+        )
+        for _ in range(len(antibody_stocks))
+    ]
+
+    screening_result_data = [
+        generate_ab_screening_result(
+            experiment=experiment,
+            stock=stock,
+            sample=antibody_sample_by_id[stock["sample_id"]],
+        )
+        for experiment, stock in zip(screening_experiments, antibody_stocks)
+    ]
+
+    exp_data.extend(screening_experiments)
 
     exp_content = json.dumps(exp_data, indent=2, ensure_ascii=False)
     sample_content = json.dumps(sample_data, indent=2, ensure_ascii=False)
     stock_content = json.dumps(stock_data, indent=2, ensure_ascii=False)
+    screening_result_content = json.dumps(screening_result_data, indent=2, ensure_ascii=False)
 
     current_date = datetime.now().strftime("%Y-%m-%d")
     current_time = datetime.now().strftime("%H-%M-%S")
@@ -359,17 +530,22 @@ def main():
             f.write(sample_content)
         with open("data/stock.json", "w", encoding="utf-8") as f:
             f.write(stock_content)
+        with open("data/screening_results.json", "w", encoding="utf-8") as f:
+            f.write(screening_result_content)
     else:
         s3_bucket = config["s3_bucket"]
         exp_s3_key = f"ingest/experiments/run_date={current_date}/{current_time}.json"
         sample_s3_key = f"ingest/samples/run_date={current_date}/{current_time}.json"
         stock_s3_key = f"ingest/stocks/run_date={current_date}/{current_time}.json"
+        screening_result_s3_key = f"ingest/screening_results/run_date={current_date}/{current_time}.json"
         helpers.write_to_s3(exp_content, s3_bucket=s3_bucket, s3_key=exp_s3_key)
         helpers.write_to_s3(sample_content, s3_bucket=s3_bucket, s3_key=sample_s3_key)
         helpers.write_to_s3(stock_content, s3_bucket=s3_bucket, s3_key=stock_s3_key)
+        helpers.write_to_s3(screening_result_content, s3_bucket=s3_bucket, s3_key=screening_result_s3_key)
         print(f"Wrote {len(exp_data)} records to {s3_bucket}/{exp_s3_key}")
         print(f"Wrote {len(sample_data)} records to {s3_bucket}/{sample_s3_key}")
         print(f"Wrote {len(stock_data)} records to {s3_bucket}/{stock_s3_key}")
+        print(f"Wrote {len(screening_result_data)} records to {s3_bucket}/{screening_result_s3_key}")
 
 
 if __name__ == "__main__":
