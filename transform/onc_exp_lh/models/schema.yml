@@ -311,3 +311,157 @@ models:
 
       - name: dbt_updated_at
         description: Timestamp when the dbt model last updated the record.
+
+  - name: dim_antibody_candidates
+    description: Dimension table containing descriptive antibody candidate sample and stock inventory information.
+
+    columns:
+      - name: sample_id
+        description: Unique identifier for the antibody candidate sample.
+        tests:
+          - not_null
+
+      - name: sample_name
+        description: Name of the antibody candidate sample.
+
+      - name: internal_code
+        description: Internal tracking code associated with the antibody candidate sample.
+
+      - name: sample_type
+        description: Type of sample. Expected to be antibody_candidate for all records in this dimension.
+
+      - name: created_by
+        description: User who created the antibody candidate sample record.
+
+      - name: created_at
+        description: Timestamp when the antibody candidate sample record was created.
+
+      - name: updated_at
+        description: Timestamp when the antibody candidate sample record was last updated.
+
+      - name: antibody_clone_id
+        description: Identifier of the antibody clone.
+
+      - name: antibody_target_antigen
+        description: Target antigen associated with the antibody candidate.
+
+      - name: antibody_format
+        description: Molecular format of the antibody candidate.
+
+      - name: antibody_binding_affinity_nm
+        description: Reference antibody binding affinity in nanomolar from the sample metadata.
+
+      - name: antibody_humanized
+        description: Indicates whether the antibody candidate is humanized.
+
+      - name: stock_id
+        description: Unique identifier for the stock inventory record.
+        tests:
+          - not_null
+          - unique
+
+      - name: stock_owner
+        description: Owner of the stock inventory.
+
+      - name: lot_number
+        description: Lot number associated with the stock inventory.
+
+      - name: quantity
+        description: Available quantity of the stock inventory.
+
+      - name: quantity_unit
+        description: Unit associated with the stock quantity.
+
+      - name: concentration
+        description: Concentration of the stock material.
+
+      - name: concentration_unit
+        description: Unit associated with the stock concentration.
+
+      - name: storage_location
+        description: Physical storage location of the stock inventory.
+
+      - name: stock_created_at
+        description: Timestamp when the stock inventory record was created.
+
+      - name: stored_at
+        description: Timestamp when the stock material was stored.
+
+      - name: expiry_date
+        description: Expiration date of the stock material.
+
+      - name: stock_updated_at
+        description: Timestamp when the stock inventory record was last updated.
+
+      - name: is_expired
+        description: Indicates whether the stock material is expired.
+
+      - name: is_depleted
+        description: Indicates whether the stock quantity is depleted.
+
+      - name: days_until_expiry
+        description: Number of days remaining until the stock material expires.
+
+      - name: ingest_date
+        description: Latest ingest date associated with the combined sample and stock record.
+
+      - name: dbt_updated_at
+        description: Timestamp when the dbt model last updated the record.
+
+  - name: mart_antibody_candidate_summary
+    description: Gold-layer mart summarizing antibody candidate screening performance across assay results.
+
+    columns:
+      - name: sample_id
+        description: Unique sample identifier for the antibody candidate.
+        tests:
+          - not_null
+          - unique
+
+      - name: sample_name
+        description: Sample name for the antibody candidate.
+
+      - name: antibody_clone_id
+        description: Identifier of the antibody clone.
+
+      - name: antibody_target_antigen
+        description: Target antigen of the antibody candidate.
+
+      - name: antibody_format
+        description: Antibody molecular format.
+
+      - name: antibody_humanized
+        description: Indicates whether the antibody candidate is humanized.
+
+      - name: avg_binding_affinity_nm
+        description: Average antibody binding affinity in nanomolar. Lower values generally indicate stronger binding.
+
+      - name: avg_cytotoxicity_percent
+        description: Average tumor cytotoxicity percentage across relevant screening results.
+
+      - name: avg_cytokine_release_pg_ml
+        description: Average cytokine release measurement across cytokine assay endpoints.
+
+      - name: avg_activation_or_inhibition_percent
+        description: Average immune activation or checkpoint inhibition percentage across relevant assay endpoints.
+
+      - name: num_experiments
+        description: Number of distinct experiments associated with the antibody candidate.
+
+      - name: num_stocks_tested
+        description: Number of distinct stock records tested for the antibody candidate.
+
+      - name: num_screening_results
+        description: Number of screening result records associated with the antibody candidate.
+
+      - name: qc_pass_rate
+        description: Proportion of screening result records that passed quality control.
+
+      - name: latest_screening_ingest_date
+        description: Latest ingestion date represented in the candidate screening results.
+
+      - name: candidate_recommendation
+        description: Rule-based recommendation for candidate advancement based on binding affinity, cytotoxicity, and QC pass rate.
+
+      - name: dbt_updated_at
+        description: Timestamp when the dbt model last updated the record.
