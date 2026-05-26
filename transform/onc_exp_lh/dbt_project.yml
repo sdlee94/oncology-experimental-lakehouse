@@ -18,3 +18,5 @@ models:
   onc_exp_lh:
     src:
       +materialized: view
+    dim:
+      +materialized: incremental
