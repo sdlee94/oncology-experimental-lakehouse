@@ -1,0 +1,24 @@
+local: true
+s3_bucket: oncology-experimental-lakehouse
+
+created_start: 2024-01-01
+created_end: 2024-01-07
+
+generation:
+  experiments_per_month: 12
+  samples_per_experiment: 3
+  stocks_per_sample: 1.25
+  screening_experiment_fraction: 0.35
+
+  signed_probability: 0.85
+  signed_max_delay_days: 7
+  witnessed_probability: 0.75
+  witnessed_max_delay_days: 5
+
+sample_type_distribution:
+  antibody_candidate: 0.35
+  pbmc: 0.15
+  cell_line: 0.15
+  plasma_fraction: 0.10
+  protein_extract: 0.10
+  tumor_sample: 0.15
