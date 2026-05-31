@@ -8,7 +8,9 @@ deduplicated as (
             *,
             row_number() over (
                 partition by id
-                order by cast(ingest_date as date) desc, cast(updated_at as timestamp) desc
+                order by 
+                    cast(ingest_date as date) desc, 
+                    cast(nullif(updated_at, '') as timestamp) desc
             ) as row_num
         from raw_stocks
     )
@@ -21,9 +23,9 @@ typed as (
         sample_id,
         stock_owner,
         lot_number,
-        quantity,
+        cast(quantity as double) as quantity,
         quantity_unit,
-        concentration,
+        cast(concentration as double) as concentration,
         concentration_unit,
         storage_location,
         cast(created_at as timestamp) as created_at,

@@ -1,6 +1,7 @@
 {{ config(
     materialized='table',
-    table_type='iceberg'
+    table_type='iceberg',
+    s3_data_dir='s3://oncology-experimental-lakehouse/mart/',
 ) }}
 
 with antibody_candidates as (
@@ -96,12 +97,9 @@ select
         when avg_binding_affinity_nm <= 50
          and coalesce(avg_cytotoxicity_percent, 0) >= 50
          and coalesce(qc_pass_rate, 0) >= 0.9
-         and num_usable_stocks > 0
             then 'Advance'
         when coalesce(qc_pass_rate, 0) < 0.8
             then 'Review QC'
-        when num_usable_stocks = 0
-            then 'Inventory Blocked'
         else 'Hold'
     end as candidate_recommendation,
 

@@ -18,6 +18,7 @@ deduplicated as (
 typed as (
     select
         result_id,
+        measurement_id,
         experiment_id,
         sample_id,
         stock_id,
@@ -37,6 +38,7 @@ typed as (
         treatment_concentration_unit,
         control_type,
         cast(replicate_number as integer) as replicate_number,
+        cast(replicates_expected as integer) as replicates_expected,
         cast(measurement_timepoint_hours as double) as measurement_timepoint_hours,
         instrument_name,
         qc_flag,

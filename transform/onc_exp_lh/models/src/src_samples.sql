@@ -9,7 +9,9 @@ deduplicated as (
             *,
             row_number() over (
                 partition by id
-                order by cast(ingest_date as date) desc, cast(updated_at as timestamp) desc
+                order by 
+                    cast(ingest_date as date) desc, 
+                    cast(nullif(updated_at, '') as timestamp) desc
             ) as row_num
         from raw_samples
     )
@@ -26,27 +28,27 @@ select
     cast(nullif(updated_at, '') as timestamp) as updated_at,
     cell_line_name,
     cell_line_tissue_origin,
-    cell_line_passage_number,
+    cast(cell_line_passage_number as int) as cell_line_passage_number,
     plasma_fraction_type,
-    plasma_donor_pool_size,
+    cast(plasma_donor_pool_size as int) as plasma_donor_pool_size,
     plasma_pathogen_screening_status,
     plasma_storage_temperature_c,
     protein_source_material,
     protein_lysis_buffer,
-    protein_yield_mg,
-    protein_purity_percent,
+    cast(protein_yield_mg as double) as protein_yield_mg,
+    cast(protein_purity_percent as double) as protein_purity_percent,
     tumor_type,
     tumor_stage,
     tumor_collection_site,
-    tumor_necrosis_percent,
+    cast(tumor_necrosis_percent as double) as tumor_necrosis_percent,
     pbmc_donor_id,
-    pbmc_viability_percent,
+    cast(pbmc_viability_percent as double) as pbmc_viability_percent,
     pbmc_isolation_method,
-    pbmc_cryopreserved,
+    cast(pbmc_cryopreserved as boolean) as pbmc_cryopreserved,
     antibody_format,
     antibody_target_antigen,
     antibody_clone_id,
-    antibody_binding_affinity_nm,
-    antibody_humanized,
+    cast(antibody_binding_affinity_nm as double) as antibody_binding_affinity_nm,
+    cast(antibody_humanized as boolean) as antibody_humanized,
     cast(ingest_date as date) as ingest_date
 from deduplicated
