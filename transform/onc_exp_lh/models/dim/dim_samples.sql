@@ -1,7 +1,7 @@
 {{ config(
     materialized='incremental',
     table_type='iceberg',
-    unique_key='experiment_id',
+    unique_key='sample_id',
     incremental_strategy='merge',
     external_location='s3://oncology-experimental-lakehouse/curate/dim_samples/',
 ) }}
