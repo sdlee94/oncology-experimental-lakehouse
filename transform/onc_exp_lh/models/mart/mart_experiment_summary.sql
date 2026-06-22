@@ -1,7 +1,7 @@
 {{ config(
     materialized='table',
     table_type='iceberg',
-    s3_data_dir='s3://oncology-experimental-lakehouse/mart/'
+    external_location='s3://oncology-experimental-lakehouse/mart/mart_experiment_summary/',
 ) }}
 
 with experiments as (

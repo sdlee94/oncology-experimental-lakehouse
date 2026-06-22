@@ -1,19 +1,9 @@
-WITH raw_experiments AS (
-    SELECT * FROM {{ source('onc_exp_lh', 'raw_experiments') }}
+with raw_experiments as (
+    select * from {{ source('onc_exp_lh', 'raw_experiments') }}
 ),
 
 deduplicated as (
-    select *
-    from (
-        select
-            *,
-            row_number() over (
-                partition by id
-                order by cast(ingest_date as date) desc
-            ) as row_num
-        from raw_experiments
-    )
-    where row_num = 1
+    {{ deduplicate('raw_experiments', 'id', 'cast(ingest_date as date) desc') }}
 ),
 
 typed as (
@@ -35,37 +25,4 @@ typed as (
     from deduplicated
 )
 
-select
-    experiment_id,
-    experiment_name,
-    project,
-    experiment_status,
-    run_date,
-    experiment_author,
-    protocol_name,
-    protocol_code,
-    protocol_version,
-    created_at,
-    signed_at,
-    witnessed_by,
-    witnessed_at,
-    case
-        when signed_at is not null then true
-        else false
-    end as is_signed,
-    case
-        when witnessed_at is not null then true
-        else false
-    end as is_witnessed,
-    case
-        when created_at is not null
-         and signed_at is not null
-            then date_diff('day', created_at, signed_at)
-    end as days_created_to_signed,
-    case
-        when signed_at is not null
-         and witnessed_at is not null
-            then date_diff('day', signed_at, witnessed_at)
-    end as days_signed_to_witnessed,
-    ingest_date
-from typed
+select * from typed

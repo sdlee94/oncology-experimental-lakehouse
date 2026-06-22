@@ -18,5 +18,11 @@ models:
   onc_exp_lh:
     src:
       +materialized: view
+    int:
+      +materialized: view
     dim:
       +materialized: incremental
+    fact:
+      +materialized: incremental
+    mart:
+      +materialized: table

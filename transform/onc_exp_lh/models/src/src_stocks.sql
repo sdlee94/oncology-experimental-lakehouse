@@ -1,20 +1,13 @@
-WITH raw_stocks AS (
-    SELECT * FROM {{ source('onc_exp_lh', 'raw_stocks') }}
+with raw_stocks as (
+    select * from {{ source('onc_exp_lh', 'raw_stocks') }}
 ),
+
 deduplicated as (
-    select *
-    from (
-        select
-            *,
-            row_number() over (
-                partition by id
-                order by 
-                    cast(ingest_date as date) desc, 
-                    cast(nullif(updated_at, '') as timestamp) desc
-            ) as row_num
-        from raw_stocks
-    )
-    where row_num = 1
+    {{ deduplicate(
+        'raw_stocks',
+        'id',
+        "cast(ingest_date as date) desc, cast(nullif(updated_at, '') as timestamp) desc"
+    ) }}
 ),
 
 typed as (
@@ -36,28 +29,4 @@ typed as (
     from deduplicated
 )
 
-select
-    stock_id,
-    sample_id,
-    stock_owner,
-    lot_number,
-    quantity,
-    quantity_unit,
-    concentration,
-    concentration_unit,
-    storage_location,
-    created_at,
-    stored_at,
-    expiry_date,
-    updated_at,
-    case
-        when expiry_date < current_date then true
-        else false
-    end as is_expired,
-    case
-        when quantity <= 0 then true
-        else false
-    end as is_depleted,
-    date_diff('day', current_date, expiry_date) as days_until_expiry,
-    ingest_date
-from typed
+select * from typed

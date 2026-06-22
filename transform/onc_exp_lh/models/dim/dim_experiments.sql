@@ -8,7 +8,7 @@
 
 with src_experiments as (
     select *
-    from {{ ref('src_experiments') }}
+    from {{ ref('int_experiments') }}
     {% if is_incremental() %}
         where ingest_date >= (
             select max(ingest_date) from {{ this }}

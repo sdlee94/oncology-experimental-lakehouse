@@ -1,21 +1,13 @@
-WITH raw_samples AS (
-    SELECT * FROM {{ source('onc_exp_lh', 'raw_samples') }}
+with raw_samples as (
+    select * from {{ source('onc_exp_lh', 'raw_samples') }}
 ),
 
 deduplicated as (
-    select *
-    from (
-        select
-            *,
-            row_number() over (
-                partition by id
-                order by 
-                    cast(ingest_date as date) desc, 
-                    cast(nullif(updated_at, '') as timestamp) desc
-            ) as row_num
-        from raw_samples
-    )
-    where row_num = 1
+    {{ deduplicate(
+        'raw_samples',
+        'id',
+        "cast(ingest_date as date) desc, cast(nullif(updated_at, '') as timestamp) desc"
+    ) }}
 )
 
 select

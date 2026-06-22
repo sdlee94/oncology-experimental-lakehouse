@@ -174,3 +174,9 @@ sources:
 
           - name: ingest_date
             description: Lakehouse ingestion partition date associated with the record.
+
+    config:
+      freshness:
+        warn_after: {count: 7, period: day}
+        error_after: {count: 14, period: day}
+      loaded_at_field: ingest_date

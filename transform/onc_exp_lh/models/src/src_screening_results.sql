@@ -1,18 +1,9 @@
-WITH raw_screening_results AS (
-    SELECT * FROM {{ source('onc_exp_lh', 'raw_screening_results') }}
+with raw_screening_results as (
+    select * from {{ source('onc_exp_lh', 'raw_screening_results') }}
 ),
+
 deduplicated as (
-    select *
-    from (
-        select
-            *,
-            row_number() over (
-                partition by result_id
-                order by cast(ingest_date as date) desc
-            ) as row_num
-        from raw_screening_results
-    )
-    where row_num = 1
+    {{ deduplicate('raw_screening_results', 'result_id', 'cast(ingest_date as date) desc') }}
 ),
 
 typed as (

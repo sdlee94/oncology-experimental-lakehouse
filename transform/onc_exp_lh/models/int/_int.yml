@@ -1,0 +1,26 @@
+models:
+  - name: int_experiments
+    description: >
+      Intermediate view enriching src_experiments with ELN compliance
+      attributes. Adds boolean signing/witnessing flags and day-delta
+      calculations that represent business logic rather than raw field
+      casting, keeping the src layer as a pure rename-and-type layer.
+
+    columns:
+      - name: experiment_id
+        description: Unique experiment identifier.
+        tests:
+          - not_null
+          - unique
+
+      - name: is_signed
+        description: Indicates whether the experiment has been signed by the author.
+
+      - name: is_witnessed
+        description: Indicates whether the experiment has been witnessed.
+
+      - name: days_created_to_signed
+        description: Number of days between experiment creation and signing. Null if not yet signed.
+
+      - name: days_signed_to_witnessed
+        description: Number of days between signing and witnessing. Null if not yet witnessed.

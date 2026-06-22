@@ -1,6 +1,7 @@
 {{ config(
     materialized='table',
-    table_type='iceberg'
+    table_type='iceberg',
+    external_location='s3://oncology-experimental-lakehouse/dim/dim_antibody_candidates/',
 ) }}
 
 with antibody_samples as (
@@ -37,9 +38,9 @@ antibody_stocks as (
         stored_at,
         expiry_date,
         updated_at as stock_updated_at,
-        is_expired,
-        is_depleted,
-        days_until_expiry,
+        case when expiry_date < current_date then true else false end as is_expired,
+        case when quantity <= 0 then true else false end              as is_depleted,
+        date_diff('day', current_date, expiry_date)                  as days_until_expiry,
         ingest_date as stock_ingest_date
     from {{ ref('dim_stocks') }}
 )

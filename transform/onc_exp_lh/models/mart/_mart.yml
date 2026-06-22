@@ -1,0 +1,190 @@
+models:
+  - name: mart_antibody_candidate_summary
+    description: Gold-layer mart summarizing antibody candidate screening performance across assay results.
+
+    columns:
+      - name: sample_id
+        description: Unique sample identifier for the antibody candidate.
+        tests:
+          - not_null
+          - unique
+
+      - name: sample_name
+        description: Sample name for the antibody candidate.
+
+      - name: internal_code
+        description: Internal tracking code associated with the antibody candidate sample.
+
+      - name: antibody_clone_id
+        description: Identifier of the antibody clone.
+
+      - name: antibody_target_antigen
+        description: Target antigen of the antibody candidate.
+
+      - name: antibody_format
+        description: Antibody molecular format.
+
+      - name: antibody_humanized
+        description: Indicates whether the antibody candidate is humanized.
+
+      - name: num_available_stocks
+        description: Number of stock records available for the antibody candidate.
+
+      - name: num_usable_stocks
+        description: Number of non-expired and non-depleted stock records available for the antibody candidate.
+
+      - name: num_experiments
+        description: Number of distinct experiments associated with the antibody candidate.
+
+      - name: num_stocks_tested
+        description: Number of distinct stock records tested for the antibody candidate.
+
+      - name: num_screening_results
+        description: Number of screening result records associated with the antibody candidate.
+
+      - name: avg_binding_affinity_nm
+        description: Average antibody binding affinity in nanomolar. Lower values generally indicate stronger binding.
+
+      - name: avg_cytotoxicity_percent
+        description: Average tumor cytotoxicity percentage across relevant screening results.
+
+      - name: avg_cytokine_release_pg_ml
+        description: Average cytokine release measurement across cytokine assay endpoints.
+
+      - name: avg_activation_or_inhibition_percent
+        description: Average immune activation or checkpoint inhibition percentage across relevant assay endpoints.
+
+      - name: qc_pass_rate
+        description: Proportion of screening result records that passed quality control.
+
+      - name: latest_screening_ingest_date
+        description: Latest ingestion date represented in the candidate screening results.
+
+      - name: latest_candidate_ingest_date
+        description: Latest ingestion date represented in the antibody candidate dimension.
+
+      - name: candidate_recommendation
+        description: Rule-based recommendation for candidate advancement based on binding affinity, cytotoxicity, and QC pass rate.
+
+      - name: dbt_updated_at
+        description: Timestamp when the dbt model last updated the record.
+
+  - name: mart_experiment_summary
+    description: >
+      Experiment-level operational mart combining experimental throughput,
+      assay execution, QC outcomes, and ELN compliance metrics such as
+      signing and witnessing status.
+
+    columns:
+      - name: experiment_id
+        description: Unique identifier for the experiment.
+        tests:
+          - unique
+          - not_null
+
+      - name: experiment_name
+        description: Human-readable experiment name.
+
+      - name: project
+        description: Project or program associated with the experiment.
+
+      - name: experiment_status
+        description: Current lifecycle status of the experiment.
+
+      - name: run_date
+        description: Date the experiment was executed.
+
+      - name: run_month
+        description: Month-level truncated run date for aggregation and reporting.
+
+      - name: experiment_author
+        description: Scientist or operator responsible for the experiment.
+
+      - name: protocol_name
+        description: Name of the protocol executed during the experiment.
+
+      - name: protocol_code
+        description: Unique protocol identifier or code.
+
+      - name: protocol_version
+        description: Version of the protocol used during execution.
+
+      - name: created_at
+        description: Timestamp when the experiment record was created.
+
+      - name: signed_at
+        description: Timestamp when the experiment was electronically signed.
+
+      - name: witnessed_at
+        description: Timestamp when the experiment was electronically witnessed.
+
+      - name: is_signed
+        description: Indicates whether the experiment has been signed.
+
+      - name: is_witnessed
+        description: Indicates whether the experiment has been witnessed.
+
+      - name: days_created_to_signed
+        description: Number of days between experiment creation and signing.
+
+      - name: days_signed_to_witnessed
+        description: Number of days between signing and witnessing.
+
+      - name: compliance_status
+        description: >
+          Derived compliance classification representing experiment
+          signing and witnessing completion state.
+        tests:
+          - accepted_values:
+              values:
+                - Complete
+                - Signed Not Witnessed
+                - Unsigned
+                - Other
+
+      - name: is_compliance_complete_within_7_days
+        description: >
+          Indicates whether signing and witnessing were completed
+          within seven days of each stage.
+
+      - name: has_screening_result
+        description: Indicates whether a screening result exists for the experiment.
+
+      - name: result_id
+        description: Unique identifier for the screening result record.
+
+      - name: sample_id
+        description: Identifier of the tested sample.
+
+      - name: stock_id
+        description: Identifier of the tested stock material.
+
+      - name: assay_name
+        description: Name of the assay performed.
+
+      - name: endpoint_name
+        description: Measured assay endpoint.
+
+      - name: instrument_name
+        description: Instrument used to generate the screening result.
+
+      - name: is_qc_pass
+        description: Indicates whether the screening result passed QC validation.
+
+      - name: qc_status
+        description: Derived QC classification for the screening result.
+        tests:
+          - accepted_values:
+              values:
+                - QC Pass
+                - QC Fail
+                - No Result
+
+      - name: screening_result_ingest_date
+        description: Timestamp when the screening result was ingested into the platform.
+
+      - name: experiment_ingest_date
+        description: Timestamp when the experiment was ingested into the platform.
+
+      - name: dbt_updated_at
+        description: Timestamp when the mart record was generated by dbt.
