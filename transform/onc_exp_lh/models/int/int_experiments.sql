@@ -1,5 +1,5 @@
-with src_experiments as (
-    select * from {{ ref('src_experiments') }}
+with stg_experiments as (
+    select * from {{ ref('stg_experiments') }}
 )
 
 select
@@ -14,4 +14,4 @@ select
         when signed_at is not null and witnessed_at is not null
             then date_diff('day', signed_at, witnessed_at)
     end as days_signed_to_witnessed
-from src_experiments
+from stg_experiments

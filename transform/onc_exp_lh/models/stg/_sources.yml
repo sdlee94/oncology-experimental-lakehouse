@@ -7,6 +7,8 @@ sources:
         columns:
           - name: id
             description: "Primary key for the raw experiments record."
+            tests:
+              - not_null
           - name: name
             description: "Experiment name in the raw source."
           - name: project
@@ -39,6 +41,8 @@ sources:
         columns:
           - name: id
             description: "Primary key for the raw sample record."
+            tests:
+              - not_null
           - name: name
             description: "Sample name in the raw source."
           - name: internal_code
@@ -67,6 +71,8 @@ sources:
         columns:
           - name: id
             description: "Primary key for the raw stock record."
+            tests:
+              - not_null
           - name: sample_id
             description: "Foreign key referencing the raw sample associated with this stock."
           - name: stock_owner

@@ -6,9 +6,9 @@
     external_location='s3://oncology-experimental-lakehouse/curate/dim_stocks/',
 ) }}
 
-with src_stocks as (
+with stg_stocks as (
     select *
-    from {{ ref('src_stocks') }}
+    from {{ ref('stg_stocks') }}
     {% if is_incremental() %}
         where ingest_date >= (
             select max(ingest_date) from {{ this }}
@@ -19,4 +19,4 @@ with src_stocks as (
 select
     *,
     cast(current_timestamp as timestamp) as dbt_updated_at
-from src_stocks
+from stg_stocks

@@ -16,13 +16,13 @@ clean-targets:         # directories to be removed by `dbt clean`
 
 models:
   onc_exp_lh:
-    src:
+    stg:
       +materialized: view
     int:
       +materialized: view
     dim:
       +materialized: incremental
-    fact:
+    fct:
       +materialized: incremental
     mart:
       +materialized: table

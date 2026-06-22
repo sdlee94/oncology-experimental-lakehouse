@@ -5,9 +5,9 @@
     incremental_strategy='merge'
 ) }}
 
-with src_screening_results as (
+with stg_screening_results as (
     select *
-    from {{ ref('src_screening_results') }}
+    from {{ ref('stg_screening_results') }}
 
     {% if is_incremental() %}
         where ingest_date >= (
@@ -66,7 +66,7 @@ final as (
         ingest_date,
         cast(current_timestamp as timestamp) as dbt_updated_at
 
-    from src_screening_results
+    from stg_screening_results
 )
 
 select *

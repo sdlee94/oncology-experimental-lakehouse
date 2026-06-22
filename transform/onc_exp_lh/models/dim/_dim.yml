@@ -181,6 +181,10 @@ models:
 
       - name: sample_id
         description: Identifier of the associated sample.
+        tests:
+          - relationships:
+              to: ref('dim_samples')
+              field: sample_id
 
       - name: stock_owner
         description: Owner of the stock inventory.
@@ -229,6 +233,9 @@ models:
         description: Unique identifier for the antibody candidate sample.
         tests:
           - not_null
+          - relationships:
+              to: ref('dim_samples')
+              field: sample_id
 
       - name: sample_name
         description: Name of the antibody candidate sample.
@@ -268,6 +275,9 @@ models:
         tests:
           - not_null
           - unique
+          - relationships:
+              to: ref('dim_stocks')
+              field: stock_id
 
       - name: stock_owner
         description: Owner of the stock inventory.

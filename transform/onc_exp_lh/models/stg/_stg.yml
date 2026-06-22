@@ -1,0 +1,98 @@
+models:
+  - name: stg_experiments
+    description: Deduplicated and typed experiment records from raw_experiments.
+
+    columns:
+      - name: experiment_id
+        description: Unique experiment identifier.
+        tests:
+          - not_null
+          - unique
+
+      - name: experiment_status
+        description: Current experiment lifecycle status.
+        tests:
+          - not_null
+          - accepted_values:
+              values: [Witnessed, Signed, Draft, In Review]
+
+      - name: ingest_date
+        description: Ingest partition date for the record.
+        tests:
+          - not_null
+
+  - name: stg_samples
+    description: Deduplicated and typed sample records from raw_samples.
+
+    columns:
+      - name: sample_id
+        description: Unique sample identifier.
+        tests:
+          - not_null
+          - unique
+
+      - name: sample_type
+        description: Sample type classification.
+        tests:
+          - not_null
+          - accepted_values:
+              values:
+                - antibody_candidate
+                - pbmc
+                - cell_line
+                - plasma_fraction
+                - protein_extract
+                - tumor_sample
+
+      - name: ingest_date
+        description: Ingest partition date for the record.
+        tests:
+          - not_null
+
+  - name: stg_stocks
+    description: Deduplicated and typed stock inventory records from raw_stocks.
+
+    columns:
+      - name: stock_id
+        description: Unique stock inventory identifier.
+        tests:
+          - not_null
+          - unique
+
+      - name: sample_id
+        description: Foreign key referencing the associated sample.
+        tests:
+          - not_null
+
+      - name: ingest_date
+        description: Ingest partition date for the record.
+        tests:
+          - not_null
+
+  - name: stg_screening_results
+    description: Deduplicated and typed screening result records from raw_screening_results.
+
+    columns:
+      - name: result_id
+        description: Unique screening result group identifier.
+        tests:
+          - not_null
+          - unique
+
+      - name: measurement_id
+        description: Unique identifier for a specific assay measurement row.
+        tests:
+          - not_null
+          - unique
+
+      - name: qc_flag
+        description: Quality control status for the result.
+        tests:
+          - not_null
+          - accepted_values:
+              values: [Pass, Fail]
+
+      - name: ingest_date
+        description: Ingest partition date for the record.
+        tests:
+          - not_null

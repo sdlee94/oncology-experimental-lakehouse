@@ -12,6 +12,7 @@ models:
         description: Identifier for a specific assay endpoint, concentration, and timepoint measurement.
         tests:
           - not_null
+          - unique
 
       - name: experiment_id
         description: Identifier of the associated experiment.
@@ -54,6 +55,8 @@ models:
 
       - name: endpoint_value
         description: Numeric value of the assay endpoint measurement.
+        tests:
+          - not_null
 
       - name: treatment_concentration
         description: Concentration of treatment material applied during the assay.
@@ -69,12 +72,20 @@ models:
 
       - name: qc_flag
         description: Quality control status associated with the result.
+        tests:
+          - not_null
+          - accepted_values:
+              values: [Pass, Fail]
 
       - name: is_qc_pass
         description: Indicates whether the result passed quality control checks.
+        tests:
+          - not_null
 
       - name: is_control
         description: Indicates whether the result corresponds to a control condition rather than a test article.
+        tests:
+          - not_null
 
       - name: instrument_name
         description: Instrument used to generate the assay measurement.

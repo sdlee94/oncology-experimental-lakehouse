@@ -6,9 +6,9 @@
     external_location='s3://oncology-experimental-lakehouse/curate/dim_samples/',
 ) }}
 
-with src_samples as (
+with stg_samples as (
     select *
-    from {{ ref('src_samples') }}
+    from {{ ref('stg_samples') }}
     {% if is_incremental() %}
         where ingest_date >= (
             select max(ingest_date) from {{ this }}
@@ -19,4 +19,4 @@ with src_samples as (
 select
     *,
     cast(current_timestamp as timestamp) as dbt_updated_at
-from src_samples
+from stg_samples

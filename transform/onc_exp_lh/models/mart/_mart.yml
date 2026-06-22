@@ -32,6 +32,9 @@ models:
 
       - name: num_usable_stocks
         description: Number of non-expired and non-depleted stock records available for the antibody candidate.
+        tests:
+          - dbt_utils.expression_is_true:
+              expression: "<= num_available_stocks"
 
       - name: num_experiments
         description: Number of distinct experiments associated with the antibody candidate.
@@ -65,6 +68,10 @@ models:
 
       - name: candidate_recommendation
         description: Rule-based recommendation for candidate advancement based on binding affinity, cytotoxicity, and QC pass rate.
+        tests:
+          - not_null
+          - accepted_values:
+              values: [Advance, Review QC, Hold]
 
       - name: dbt_updated_at
         description: Timestamp when the dbt model last updated the record.
@@ -146,9 +153,13 @@ models:
         description: >
           Indicates whether signing and witnessing were completed
           within seven days of each stage.
+        tests:
+          - not_null
 
       - name: has_screening_result
         description: Indicates whether a screening result exists for the experiment.
+        tests:
+          - not_null
 
       - name: result_id
         description: Unique identifier for the screening result record.

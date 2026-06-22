@@ -15,9 +15,13 @@ models:
 
       - name: is_signed
         description: Indicates whether the experiment has been signed by the author.
+        tests:
+          - not_null
 
       - name: is_witnessed
         description: Indicates whether the experiment has been witnessed.
+        tests:
+          - not_null
 
       - name: days_created_to_signed
         description: Number of days between experiment creation and signing. Null if not yet signed.
